@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
 from sqlmodel import Session
 
-from app.database import get_session
+from app.database import get_sync_session
 from app.schemas.content import (
     ContentCreate,
     ContentUpdate,
@@ -65,7 +65,7 @@ def list_contents(
     topic_id: Optional[int] = Query(default=None, description="关联选题ID"),
     page: int = Query(default=1, ge=1, description="页码"),
     page_size: int = Query(default=20, ge=1, le=100, description="每页数量"),
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_sync_session),
 ):
     """获取内容列表，支持按类型、风格、状态和关联选题筛选"""
     items, total = content_service.list_contents(
@@ -86,7 +86,7 @@ def list_contents(
 @router.post("", response_model=ContentResponse, status_code=201, summary="手动创建内容")
 def create_content(
     data: ContentCreate,
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_sync_session),
 ):
     """手动创建内容（不经过AI生成）"""
     return ContentResponse.model_validate(
@@ -97,7 +97,7 @@ def create_content(
 @router.post("/generate", summary="AI生成内容")
 def generate_content(
     request: ContentGenerateRequest,
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_sync_session),
 ):
     """基于选题 AI 生成内容（文章/视频脚本/海报文案/社交帖子），自动保存到数据库"""
     return content_service.generate_content(session, request)
@@ -106,7 +106,7 @@ def generate_content(
 @router.get("/{content_id}", response_model=ContentResponse, summary="获取内容详情")
 def get_content(
     content_id: int,
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_sync_session),
 ):
     """获取单个内容详情"""
     return ContentResponse.model_validate(
@@ -118,7 +118,7 @@ def get_content(
 def update_content(
     content_id: int,
     data: ContentUpdate,
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_sync_session),
 ):
     """手动编辑保存内容"""
     return ContentResponse.model_validate(
@@ -129,7 +129,7 @@ def update_content(
 @router.delete("/{content_id}", status_code=204, summary="删除内容")
 def delete_content(
     content_id: int,
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_sync_session),
 ):
     """删除指定内容"""
     content_service.delete_content(session, content_id)
@@ -139,7 +139,7 @@ def delete_content(
 def rewrite_content(
     content_id: int,
     request: ContentRewriteRequest,
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_sync_session),
 ):
     """AI 改写/润色/扩写已有内容
 

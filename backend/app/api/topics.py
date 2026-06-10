@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
 from sqlmodel import Session
 
-from app.database import get_session, sync_engine
+from app.database import get_sync_session, sync_engine
 from app.schemas.topic import (
     HotTopicResponse,
     HotTopicListResponse,
@@ -44,7 +44,7 @@ def list_hot_topics(
     platform: Optional[str] = Query(default=None, description="来源平台筛选"),
     page: int = Query(default=1, ge=1, description="页码"),
     page_size: int = Query(default=75, ge=1, le=100, description="每页数量"),
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_sync_session),
 ):
     """获取模拟热点话题列表，支持按平台筛选和分页"""
     items, total = topic_service.get_hot_topics(
@@ -60,7 +60,7 @@ def list_hot_topics(
 
 @router.get("/hot/stats", summary="获取热点统计信息")
 def hot_topic_stats(
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_sync_session),
 ):
     """获取热点话题的平台分布、去重统计等"""
     return topic_service.get_hot_topic_stats(session)
@@ -139,7 +139,7 @@ def refresh_hot_topics():
 @router.get("/hot/{topic_id}", response_model=HotTopicResponse, summary="获取热点详情")
 def get_hot_topic(
     topic_id: int,
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_sync_session),
 ):
     """获取单个热点话题详细信息"""
     topic = topic_service.get_hot_topic(session, topic_id)
@@ -149,7 +149,7 @@ def get_hot_topic(
 @router.get("/hot/{topic_id}/analyze", summary="AI分析热点话题")
 def analyze_hot_topic(
     topic_id: int,
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_sync_session),
 ):
     """AI分析热点话题的热度、趋势和选题潜力"""
     return topic_service.analyze_hot_topic(session, topic_id)
@@ -163,7 +163,7 @@ def list_topics(
     content_type: Optional[str] = Query(default=None, description="内容类型筛选"),
     page: int = Query(default=1, ge=1, description="页码"),
     page_size: int = Query(default=20, ge=1, le=100, description="每页数量"),
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_sync_session),
 ):
     """获取选题列表，支持按状态和类型筛选、分页"""
     items, total = topic_service.list_topics(
@@ -182,7 +182,7 @@ def list_topics(
 @router.post("", response_model=TopicResponse, status_code=201, summary="创建选题")
 def create_topic(
     data: TopicCreate,
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_sync_session),
 ):
     """手动创建新选题"""
     return TopicResponse.model_validate(
@@ -193,7 +193,7 @@ def create_topic(
 @router.post("/generate", response_model=TopicGenerateResponse, summary="AI生成选题")
 def generate_topics(
     request: TopicGenerateRequest,
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_sync_session),
 ):
     """基于热点话题，AI自动生成选题建议"""
     return topic_service.generate_topics(session, request)
@@ -202,7 +202,7 @@ def generate_topics(
 @router.get("/{topic_id}", response_model=TopicResponse, summary="获取选题详情")
 def get_topic(
     topic_id: int,
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_sync_session),
 ):
     """获取单个选题的详情"""
     return TopicResponse.model_validate(
@@ -214,7 +214,7 @@ def get_topic(
 def update_topic(
     topic_id: int,
     data: TopicUpdate,
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_sync_session),
 ):
     """更新选题内容、状态等"""
     return TopicResponse.model_validate(
@@ -225,7 +225,7 @@ def update_topic(
 @router.delete("/{topic_id}", status_code=204, summary="删除选题")
 def delete_topic(
     topic_id: int,
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_sync_session),
 ):
     """删除指定选题"""
     topic_service.delete_topic(session, topic_id)
@@ -235,7 +235,7 @@ def delete_topic(
 def schedule_topic(
     topic_id: int,
     data: TopicScheduleRequest,
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_sync_session),
 ):
     """为选题设置计划发布日期"""
     return TopicResponse.model_validate(

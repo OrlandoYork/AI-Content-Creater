@@ -2,7 +2,8 @@
 import logging
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy import create_engine
-from sqlmodel import SQLModel
+from sqlalchemy.orm import sessionmaker
+from sqlmodel import SQLModel, Session
 from app.core.config import DATABASE_URL, DATABASE_URL_SYNC, DEBUG, REDIS_URL
 import redis.asyncio as aioredis
 
@@ -30,6 +31,13 @@ sync_engine = create_engine(
     max_overflow=10,
 )
 
+# === Sync Session factory (现有 API 兼容) ===
+SyncSessionLocal = sessionmaker(
+    sync_engine,
+    class_=Session,
+    expire_on_commit=False,
+)
+
 # === Redis ===
 async def get_redis() -> aioredis.Redis:
     """获取 Redis 连接"""
@@ -44,8 +52,14 @@ async def create_db_and_tables():
 
 
 async def get_session():
-    """获取异步数据库会话（FastAPI 依赖注入）"""
+    """获取异步数据库会话（FastAPI 依赖注入 — 新路由使用）"""
     async with AsyncSessionLocal() as session:
+        yield session
+
+
+def get_sync_session():
+    """获取同步数据库会话（FastAPI 依赖注入 — 现有 API 兼容）"""
+    with SyncSessionLocal() as session:
         yield session
 
 

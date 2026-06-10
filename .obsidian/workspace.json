@@ -185,6 +185,8 @@
   },
   "active": "1b7ced37a3260863",
   "lastOpenFiles": [
+    "backend/app/api/topics.py.tmp.38316.9621d233c994",
+    "backend/app/database.py.tmp.38316.cb9bf57bc615",
     "frontend/README.md",
     "CLAUDE.md",
     "AI全媒体内容生产与分发系统.md",
@@ -197,7 +199,6 @@
     "backend/app/schemas/__pycache__/distribution.cpython-313.pyc",
     "backend/app/api/__pycache__/distribution.cpython-313.pyc",
     "backend/app/services/__pycache__/review_service.cpython-313.pyc",
-    "backend/app/schemas/__pycache__/review.cpython-313.pyc",
     "CHANGELOG.md",
     "log.md"
   ]
