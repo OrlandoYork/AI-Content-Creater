@@ -8,6 +8,10 @@ import {
   BarChartOutlined,
   ThunderboltOutlined,
   FileTextOutlined,
+  CheckCircleOutlined,
+  CalendarOutlined,
+  PieChartOutlined,
+  TrophyOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 
@@ -30,10 +34,20 @@ const menuItems: MenuProps['items'] = [
     ],
   },
   {
-    key: '/distribution', icon: <SendOutlined />, label: '审核分发', disabled: true,
+    key: 'distribution-group', icon: <SendOutlined />, label: '审核分发',
+    children: [
+      { key: '/reviews', icon: <CheckCircleOutlined />, label: '内容审核' },
+      { key: '/distribution', icon: <SendOutlined />, label: '分发中心' },
+      { key: '/distribution/calendar', icon: <CalendarOutlined />, label: '发布日历' },
+    ],
   },
   {
-    key: '/analytics', icon: <BarChartOutlined />, label: '数据分析', disabled: true,
+    key: 'analytics-group', icon: <BarChartOutlined />, label: '数据分析',
+    children: [
+      { key: '/analytics', icon: <PieChartOutlined />, label: '数据概览' },
+      { key: '/analytics/report', icon: <BarChartOutlined />, label: '内容报表' },
+      { key: '/analytics/optimization', icon: <TrophyOutlined />, label: 'AI 优化建议' },
+    ],
   },
 ];
 
@@ -68,7 +82,7 @@ export default function Sidebar() {
       <Menu
         mode="inline"
         selectedKeys={[selectedKey]}
-        defaultOpenKeys={['topics-group', 'content-group']}
+        defaultOpenKeys={['topics-group', 'content-group', 'distribution-group', 'analytics-group']}
         items={menuItems}
         onClick={handleClick}
         style={{ borderInlineEnd: 'none', marginTop: 8 }}

@@ -9,6 +9,12 @@ const breadcrumbMap: Record<string, string> = {
   '/topics/generate': 'AI 生成选题',
   '/content': '内容列表',
   '/content/generate': 'AI 内容创作',
+  '/reviews': '内容审核',
+  '/distribution': '分发中心',
+  '/distribution/calendar': '发布日历',
+  '/analytics': '数据概览',
+  '/analytics/report': '内容报表',
+  '/analytics/optimization': 'AI 优化建议',
 };
 
 const pageTitleMap: Record<string, string> = {
@@ -17,6 +23,12 @@ const pageTitleMap: Record<string, string> = {
   '/topics/generate': 'AI 选题生成',
   '/content': '内容列表',
   '/content/generate': 'AI 内容创作',
+  '/reviews': '内容审核',
+  '/distribution': '分发中心',
+  '/distribution/calendar': '发布日历',
+  '/analytics': '数据概览',
+  '/analytics/report': '内容报表',
+  '/analytics/optimization': 'AI 优化建议',
 };
 
 export default function Header() {

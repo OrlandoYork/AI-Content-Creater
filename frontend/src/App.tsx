@@ -8,6 +8,12 @@ import TopicGenerate from './pages/topics/TopicGenerate';
 import TopicDetail from './pages/topics/TopicDetail';
 import ContentList from './pages/content/ContentList';
 import ContentEditor from './pages/content/ContentEditor';
+import ReviewQueue from './pages/review/ReviewQueue';
+import DistributionCenter from './pages/distribution/DistributionCenter';
+import PublishCalendar from './pages/distribution/PublishCalendar';
+import DataOverview from './pages/analytics/DataOverview';
+import ContentReport from './pages/analytics/ContentReport';
+import OptimizationPanel from './pages/analytics/OptimizationPanel';
 import AgentFloatingButton from './components/agent/AgentFloatingButton';
 import AgentPanel from './components/agent/AgentPanel';
 
@@ -52,6 +58,12 @@ export default function App() {
               <Route path="/topics/:id" element={<TopicDetail />} />
               <Route path="/content" element={<ContentList />} />
               <Route path="/content/generate" element={<ContentEditor />} />
+              <Route path="/reviews" element={<ReviewQueue />} />
+              <Route path="/distribution" element={<DistributionCenter />} />
+              <Route path="/distribution/calendar" element={<PublishCalendar />} />
+              <Route path="/analytics" element={<DataOverview />} />
+              <Route path="/analytics/report" element={<ContentReport />} />
+              <Route path="/analytics/optimization" element={<OptimizationPanel />} />
               <Route path="*" element={<Dashboard />} />
             </Route>
           </Routes>

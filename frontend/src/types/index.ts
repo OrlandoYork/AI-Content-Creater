@@ -247,3 +247,122 @@ export const REWRITE_LABELS: Record<string, string> = {
   polish: 'AI 润色',
   expand: 'AI 扩写',
 };
+
+// ==================== Reviews (Phase 3) ====================
+
+export interface Review {
+  id: number;
+  content_id: number;
+  is_approved: boolean;
+  issues: string;
+  reviewer_notes: string;
+  reviewed_at: string;
+  created_at: string;
+}
+
+export interface ReviewListResponse {
+  items: Review[];
+  total: number;
+}
+
+export interface ReviewCreate {
+  content_id: number;
+  is_approved?: boolean;
+  issues?: string;
+  reviewer_notes?: string;
+}
+
+export interface ReviewUpdate {
+  is_approved?: boolean;
+  issues?: string;
+  reviewer_notes?: string;
+}
+
+// ==================== Distributions (Phase 3) ====================
+
+export type DistributionStatus = 'pending' | 'published' | 'failed' | 'scheduled';
+
+export interface Distribution {
+  id: number;
+  content_id: number;
+  platform: string;
+  publish_url: string;
+  status: DistributionStatus;
+  scheduled_time: string | null;
+  published_at: string | null;
+  platform_data: string;
+  created_at: string;
+}
+
+export interface DistributionListResponse {
+  items: Distribution[];
+  total: number;
+}
+
+export interface DistributionCreate {
+  content_id: number;
+  platform: string;
+  scheduled_time?: string | null;
+}
+
+export interface DistributionUpdate {
+  platform?: string;
+  status?: DistributionStatus;
+  publish_url?: string;
+  scheduled_time?: string | null;
+  published_at?: string | null;
+  platform_data?: string;
+}
+
+export const DISTRIBUTION_STATUS_LABELS: Record<string, string> = {
+  pending: '待发布',
+  published: '已发布',
+  failed: '失败',
+  scheduled: '已排期',
+};
+
+export const DISTRIBUTION_STATUS_COLORS: Record<string, string> = {
+  pending: 'default',
+  published: 'green',
+  failed: 'red',
+  scheduled: 'blue',
+};
+
+export const DISTRIBUTION_PLATFORM_LABELS: Record<string, string> = {
+  weibo: '微博',
+  douyin: '抖音',
+  xiaohongshu: '小红书',
+  zhihu: '知乎',
+};
+
+// ==================== Analytics (Phase 4) ====================
+
+export interface AnalyticsRecord {
+  id: number;
+  content_id: number;
+  distribution_id: number | null;
+  platform: string;
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  bookmarks: number;
+  follower_gain: number;
+  collected_at: string;
+}
+
+export interface AnalyticsListResponse {
+  items: AnalyticsRecord[];
+  total: number;
+}
+
+export interface AnalyticsOverview {
+  total_views: number;
+  total_likes: number;
+  total_comments: number;
+  total_shares: number;
+  total_bookmarks: number;
+  total_follower_gain: number;
+  total_contents: number;
+  platform_breakdown: { platform: string; views: number; likes: number; comments: number }[];
+}
