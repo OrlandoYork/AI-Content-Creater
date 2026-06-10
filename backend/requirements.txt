@@ -6,3 +6,16 @@ python-multipart==0.0.20
 httpx==0.28.1
 pytest==8.3.4
 pytest-asyncio==0.25.2
+
+# === NEW: Agent + PostgreSQL + Redis ===
+langgraph==1.0.1
+langgraph-checkpoint-postgres==2.0.17
+langchain==0.3.27
+langchain-core==0.3.76
+langchain-openai==0.3.33
+asyncpg==0.30.0
+sqlalchemy[asyncio]==2.0.41
+redis==6.4.0
+alembic==1.15.1
+psycopg2-binary==2.9.10
+sse-starlette==2.2.1
