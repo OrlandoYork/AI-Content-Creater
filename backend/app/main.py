@@ -10,6 +10,9 @@ from app.core.exceptions import AppException
 from app.api import topics
 from app.api import content
 from app.api import agent
+from app.api import review
+from app.api import distribution
+from app.api import analytics
 
 # 配置日志
 logging.basicConfig(
@@ -97,3 +100,6 @@ app.include_router(topics.router, prefix=API_PREFIX)
 app.include_router(content.router, prefix=API_PREFIX)
 app.include_router(content.titles_router, prefix=API_PREFIX)
 app.include_router(agent.router, prefix=API_PREFIX)
+app.include_router(review.router, prefix=API_PREFIX)
+app.include_router(distribution.router, prefix=API_PREFIX)
+app.include_router(analytics.router, prefix=API_PREFIX)
