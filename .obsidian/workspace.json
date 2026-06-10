@@ -1,0 +1,240 @@
+{
+  "main": {
+    "id": "5cbb0d37afaf555c",
+    "type": "split",
+    "children": [
+      {
+        "id": "5548502734bb5dfe",
+        "type": "tabs",
+        "dimension": 43.6950146627566,
+        "children": [
+          {
+            "id": "1b7ced37a3260863",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "CHANGELOG.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "CHANGELOG"
+            }
+          },
+          {
+            "id": "7ae7be7a5fdeb326",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "log.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "log"
+            }
+          }
+        ],
+        "currentTab": 1
+      },
+      {
+        "id": "9d310b03f8502fe2",
+        "type": "tabs",
+        "dimension": 56.30498533724341,
+        "children": [
+          {
+            "id": "9b571e6c6fef50a1",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "CHANGELOG.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "CHANGELOG"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "61d8c5dbb2d8b329",
+    "type": "split",
+    "children": [
+      {
+        "id": "a679d335acde4540",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "cc7c37d00dc7ac92",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "文件列表"
+            }
+          },
+          {
+            "id": "45ba10d9e460276b",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "搜索"
+            }
+          },
+          {
+            "id": "7177562838f15e92",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "书签"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "bca4a09dfa6f3c68",
+    "type": "split",
+    "children": [
+      {
+        "id": "1b5887bd2958f33b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "60a6af6622c7d257",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "AI全媒体内容生产与分发系统.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "AI全媒体内容生产与分发系统 的反向链接列表"
+            }
+          },
+          {
+            "id": "98221f159b7ba3ac",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "AI全媒体内容生产与分发系统.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "AI全媒体内容生产与分发系统 的出链列表"
+            }
+          },
+          {
+            "id": "56c9c8b1da75b6c0",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "标签"
+            }
+          },
+          {
+            "id": "53ed5b85237fd7ef",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "添加笔记属性"
+            }
+          },
+          {
+            "id": "7936d5fc5ecc81d0",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "AI全媒体内容生产与分发系统.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "AI全媒体内容生产与分发系统 的大纲"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false,
+      "bases:新建数据库": false
+    }
+  },
+  "active": "9b571e6c6fef50a1",
+  "lastOpenFiles": [
+    "log.md",
+    "CHANGELOG.md",
+    "CLAUDE.md",
+    "CHANGELOG.md.tmp.31712.941768cb03db",
+    "CHANGELOG.md.tmp.31712.5738a786d454",
+    "CHANGELOG.md.tmp.31712.4f5920c6f7fe",
+    "CHANGELOG.md.tmp.31712.a2b093785bef",
+    "AI全媒体内容生产与分发系统.md",
+    "frontend/src/pages/content/ContentEditor.tsx",
+    "frontend/src/pages/content/ContentList.tsx",
+    "frontend/src/pages/content",
+    "frontend/src/stores/contentStore.ts",
+    "frontend/src/services/contentApi.ts",
+    "frontend/src/types/index.ts.tmp.31712.23109a6b74a6"
+  ]
+}
