@@ -185,6 +185,8 @@
   },
   "active": "1b7ced37a3260863",
   "lastOpenFiles": [
+    "backend/alembic/versions/__pycache__/06c11aae00f4_add_review_distribution_analytics_tables.cpython-313.pyc",
+    "backend/alembic/versions/06c11aae00f4_add_review_distribution_analytics_tables.py",
     "backend/app/services/__pycache__/analytics_service.cpython-313.pyc",
     "backend/app/schemas/__pycache__/analytics.cpython-313.pyc",
     "backend/app/api/__pycache__/analytics.cpython-313.pyc",
@@ -194,8 +196,6 @@
     "backend/app/services/__pycache__/review_service.cpython-313.pyc",
     "backend/app/schemas/__pycache__/review.cpython-313.pyc",
     "backend/app/api/__pycache__/review.cpython-313.pyc",
-    "backend/app/api/__pycache__/agent.cpython-313.pyc",
-    "backend/app/agent/__pycache__/checkpointer.cpython-313.pyc",
     "CHANGELOG.md",
     "log.md",
     "CLAUDE.md",
