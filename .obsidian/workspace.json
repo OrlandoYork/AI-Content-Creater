@@ -6,7 +6,6 @@
       {
         "id": "5548502734bb5dfe",
         "type": "tabs",
-        "dimension": 43.6950146627566,
         "children": [
           {
             "id": "1b7ced37a3260863",
@@ -14,48 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "CHANGELOG.md",
+                "file": "AI全媒体内容生产与分发系统.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "CHANGELOG"
-            }
-          },
-          {
-            "id": "7ae7be7a5fdeb326",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "log.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "log"
-            }
-          }
-        ],
-        "currentTab": 1
-      },
-      {
-        "id": "9d310b03f8502fe2",
-        "type": "tabs",
-        "dimension": 56.30498533724341,
-        "children": [
-          {
-            "id": "9b571e6c6fef50a1",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "CHANGELOG.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "CHANGELOG"
+              "title": "AI全媒体内容生产与分发系统"
             }
           }
         ]
@@ -220,21 +183,22 @@
       "bases:新建数据库": false
     }
   },
-  "active": "9b571e6c6fef50a1",
+  "active": "1b7ced37a3260863",
   "lastOpenFiles": [
-    "log.md",
+    "backend/app/services/__pycache__/analytics_service.cpython-313.pyc",
+    "backend/app/schemas/__pycache__/analytics.cpython-313.pyc",
+    "backend/app/api/__pycache__/analytics.cpython-313.pyc",
+    "backend/app/services/__pycache__/distribution_service.cpython-313.pyc",
+    "backend/app/schemas/__pycache__/distribution.cpython-313.pyc",
+    "backend/app/api/__pycache__/distribution.cpython-313.pyc",
+    "backend/app/services/__pycache__/review_service.cpython-313.pyc",
+    "backend/app/schemas/__pycache__/review.cpython-313.pyc",
+    "backend/app/api/__pycache__/review.cpython-313.pyc",
+    "backend/app/api/__pycache__/agent.cpython-313.pyc",
+    "backend/app/agent/__pycache__/checkpointer.cpython-313.pyc",
     "CHANGELOG.md",
+    "log.md",
     "CLAUDE.md",
-    "CHANGELOG.md.tmp.31712.941768cb03db",
-    "CHANGELOG.md.tmp.31712.5738a786d454",
-    "CHANGELOG.md.tmp.31712.4f5920c6f7fe",
-    "CHANGELOG.md.tmp.31712.a2b093785bef",
-    "AI全媒体内容生产与分发系统.md",
-    "frontend/src/pages/content/ContentEditor.tsx",
-    "frontend/src/pages/content/ContentList.tsx",
-    "frontend/src/pages/content",
-    "frontend/src/stores/contentStore.ts",
-    "frontend/src/services/contentApi.ts",
-    "frontend/src/types/index.ts.tmp.31712.23109a6b74a6"
+    "AI全媒体内容生产与分发系统.md"
   ]
 }

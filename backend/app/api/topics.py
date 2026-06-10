@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
 from sqlmodel import Session
 
-from app.database import get_session, Session as DBSession, engine
+from app.database import get_session, sync_engine
 from app.schemas.topic import (
     HotTopicResponse,
     HotTopicListResponse,
@@ -92,7 +92,8 @@ def refresh_hot_topics():
                 if evt == "__topics__":
                     # 内部事件：获取生成的话题列表，存入数据库
                     all_topics = data
-                    with DBSession(engine) as session:
+                    from sqlmodel import Session as DBSession
+                    with DBSession(sync_engine) as session:
                         for t in all_topics:
                             session.add(t)
                         session.commit()
