@@ -8,6 +8,8 @@ import TopicGenerate from './pages/topics/TopicGenerate';
 import TopicDetail from './pages/topics/TopicDetail';
 import ContentList from './pages/content/ContentList';
 import ContentEditor from './pages/content/ContentEditor';
+import AgentFloatingButton from './components/agent/AgentFloatingButton';
+import AgentPanel from './components/agent/AgentPanel';
 
 export default function App() {
   return (
@@ -41,6 +43,8 @@ export default function App() {
             </Route>
           </Routes>
         </BrowserRouter>
+        <AgentFloatingButton />
+        <AgentPanel />
       </AntApp>
     </ConfigProvider>
   );
