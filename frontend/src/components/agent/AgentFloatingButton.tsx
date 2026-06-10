@@ -14,14 +14,11 @@ export default function AgentFloatingButton() {
       icon={<RobotOutlined />}
       type={panelOpen ? 'primary' : 'default'}
       tooltip={panelOpen ? '关闭 AI 助手' : 'AI 助手'}
-      badge={runningTask?.status === 'running' ? { dot: true, color: 'var(--accent-mint)' } : undefined}
+      badge={runningTask?.status === 'running' ? { dot: true, color: '#16a34a' } : undefined}
       onClick={togglePanel}
       style={{
-        position: 'fixed',
-        right: panelOpen ? 440 : 24,
-        bottom: 24,
-        transition: 'right 0.3s var(--ease-out)',
-        zIndex: 1000,
+        position: 'fixed', right: panelOpen ? 440 : 24, bottom: 24,
+        transition: 'right 0.3s var(--ease-out)', zIndex: 1000,
       }}
     />
   );

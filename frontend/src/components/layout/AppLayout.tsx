@@ -14,7 +14,7 @@ export default function AppLayout() {
         <Content
           style={{
             padding: 32,
-            minHeight: 'calc(100vh - 64px)',
+            minHeight: 'calc(100vh - 56px)',
             background: 'var(--bg-root)',
           }}
         >

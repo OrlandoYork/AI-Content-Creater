@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { ConfigProvider, theme } from 'antd';
+import { ConfigProvider } from 'antd';
 import { App as AntApp } from 'antd';
 import AppLayout from './components/layout/AppLayout';
 import Dashboard from './pages/Dashboard';
@@ -15,17 +15,30 @@ export default function App() {
   return (
     <ConfigProvider
       theme={{
-        algorithm: theme.darkAlgorithm,
         token: {
-          colorPrimary: '#d4a853',
-          colorBgBase: '#0b0f19',
-          colorBgContainer: '#161d2a',
-          colorBgElevated: '#1e2740',
-          colorBorder: '#1e2a3a',
-          colorText: '#e8ecf1',
-          colorTextSecondary: '#8b95a8',
+          colorPrimary: '#2563eb',
+          colorPrimaryBg: '#eff6ff',
+          colorBgBase: '#ffffff',
+          colorBgContainer: '#ffffff',
+          colorBgElevated: '#ffffff',
+          colorBorder: '#e2e8f0',
+          colorBorderSecondary: '#f1f5f9',
+          colorText: '#0f172a',
+          colorTextSecondary: '#475569',
+          colorTextTertiary: '#94a3b8',
           borderRadius: 6,
-          fontFamily: "'Noto Sans SC', -apple-system, sans-serif",
+          borderRadiusLG: 8,
+          borderRadiusSM: 4,
+          fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+          fontSize: 14,
+          lineHeight: 1.6,
+          controlHeight: 36,
+          controlHeightLG: 42,
+          controlHeightSM: 30,
+          paddingContentHorizontal: 20,
+          paddingContentVertical: 16,
+          boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+          boxShadowSecondary: '0 4px 6px -1px rgba(0,0,0,0.06)',
         },
       }}
     >

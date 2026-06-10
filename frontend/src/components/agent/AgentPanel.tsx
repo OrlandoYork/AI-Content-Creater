@@ -14,12 +14,23 @@ export default function AgentPanel() {
   if (!panelOpen) return null;
 
   return (
-    <div style={{ position: 'fixed', right: 0, top: 0, bottom: 0, width: 420, background: 'var(--bg-root)', borderLeft: '1px solid var(--border-default)', display: 'flex', flexDirection: 'column', zIndex: 999, boxShadow: '-8px 0 32px rgba(0,0,0,0.3)' }}>
-      <div style={{ height: 56, padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-default)', flexShrink: 0 }}>
+    <div style={{
+      position: 'fixed', right: 0, top: 0, bottom: 0, width: 420,
+      background: '#ffffff', borderLeft: '1px solid var(--border-default)',
+      display: 'flex', flexDirection: 'column', zIndex: 999,
+      boxShadow: '-4px 0 24px rgba(0,0,0,0.06)',
+    }}>
+      <div style={{
+        height: 56, padding: '0 16px', display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between', borderBottom: '1px solid var(--border-default)', flexShrink: 0,
+      }}>
         <Space>
-          <span style={{ fontSize: 20 }}>🤖</span>
-          <span style={{ fontFamily: 'var(--font-display)', fontSize: 15, color: 'var(--text-primary)' }}>AI Agent</span>
-          {task && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: task.status === 'running' ? 'var(--accent-mint)' : 'var(--text-muted)' }}>{task.status === 'running' ? 'LIVE' : task.status.toUpperCase()}</span>}
+          <span style={{ fontSize: 18 }}>🤖</span>
+          <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>AI Agent</span>
+          {task && <span style={{
+            fontSize: 10, fontWeight: 500,
+            color: task.status === 'running' ? '#16a34a' : 'var(--text-muted)',
+          }}>{task.status === 'running' ? 'LIVE' : task.status.toUpperCase()}</span>}
         </Space>
         <Button type="text" icon={<CloseOutlined />} onClick={closePanel} size="small" />
       </div>

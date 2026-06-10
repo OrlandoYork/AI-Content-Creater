@@ -4,10 +4,8 @@ import { NODE_ORDER, NODE_LABELS } from '../../types/agent';
 
 export default function AgentProgress({ task }: { task: AgentTask }) {
   return (
-    <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-default)' }}>
-      <Steps
-        direction="vertical"
-        size="small"
+    <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-default)', background: '#fafbfc' }}>
+      <Steps direction="vertical" size="small"
         status={task.status === 'error' ? 'error' : 'process'}
         items={NODE_ORDER.slice(1).map((node) => {
           const stepDone = task.steps.some((s) => s.toolName === node && s.status === 'done');
@@ -17,7 +15,7 @@ export default function AgentProgress({ task }: { task: AgentTask }) {
             status: stepDone ? 'finish' : stepRunning ? 'process' : ('wait' as const),
           };
         })}
-        style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}
+        style={{ fontSize: 12 }}
       />
     </div>
   );

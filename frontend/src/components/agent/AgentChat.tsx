@@ -10,8 +10,8 @@ function MessageBubble({ msg }: { msg: IDisplayMessage }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: isUser ? 'flex-end' : 'flex-start', marginBottom: 12 }}>
       <div style={{
-        maxWidth: '85%', padding: '10px 14px', borderRadius: 12,
-        background: isUser ? 'linear-gradient(135deg, var(--accent-gold), #8b6914)' : msg.status === 'error' ? 'rgba(240,101,101,0.1)' : 'var(--bg-card)',
+        maxWidth: '85%', padding: '10px 14px', borderRadius: 10,
+        background: isUser ? 'var(--accent)' : msg.status === 'error' ? '#fef2f2' : '#f8fafc',
         border: isUser ? 'none' : '1px solid var(--border-default)',
         color: isUser ? '#fff' : 'var(--text-primary)', fontSize: 13, lineHeight: 1.6, whiteSpace: 'pre-wrap',
       }}>
@@ -22,7 +22,7 @@ function MessageBubble({ msg }: { msg: IDisplayMessage }) {
       {msg.steps && msg.steps.length > 0 && (
         <div style={{ marginTop: 4, width: '100%' }}>
           {msg.steps.map((step) => (
-            <div key={step.id} style={{ fontSize: 11, color: step.status === 'running' ? 'var(--accent-cyan)' : 'var(--text-muted)', fontFamily: 'var(--font-mono)', padding: '2px 12px' }}>
+            <div key={step.id} style={{ fontSize: 11, color: step.status === 'running' ? 'var(--accent-cyan)' : 'var(--text-muted)', padding: '2px 12px' }}>
               {step.status === 'running' ? '⟳' : step.status === 'done' ? '✓' : '✗'} {step.content}
             </div>
           ))}
@@ -49,11 +49,7 @@ export default function AgentChat() {
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-    sendMessage(input.trim());
-    setInput('');
-  };
+  const handleSend = () => { if (!input.trim()) return; sendMessage(input.trim()); setInput(''); };
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -68,8 +64,10 @@ export default function AgentChat() {
       </div>
       <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border-default)' }}>
         <Space.Compact style={{ width: '100%' }}>
-          <Input value={input} onChange={(e) => setInput(e.target.value)} onPressEnter={handleSend} placeholder="输入指令..." disabled={task?.status === 'running'} style={{ fontFamily: 'var(--font-mono)', fontSize: 13 }} />
-          <Button type="primary" icon={<SendOutlined />} onClick={handleSend} disabled={!input.trim() || task?.status === 'running'} loading={task?.status === 'running'} />
+          <Input value={input} onChange={(e) => setInput(e.target.value)} onPressEnter={handleSend}
+            placeholder="输入指令..." disabled={task?.status === 'running'} style={{ fontSize: 13 }} />
+          <Button type="primary" icon={<SendOutlined />} onClick={handleSend}
+            disabled={!input.trim() || task?.status === 'running'} loading={task?.status === 'running'} />
         </Space.Compact>
       </div>
     </div>
