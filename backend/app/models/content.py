@@ -2,6 +2,8 @@
 from datetime import datetime
 from typing import Optional
 from sqlmodel import Field, SQLModel
+from sqlalchemy import Column
+from sqlalchemy.dialects.postgresql import JSONB
 
 
 class Content(SQLModel, table=True):
@@ -34,3 +36,5 @@ class Content(SQLModel, table=True):
     )
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
+    agent_task_id: Optional[str] = Field(default=None, max_length=64, description="关联的 Agent 任务ID")
+    metadata_: Optional[str] = Field(default="{}", sa_column=Column(JSONB), description="扩展元数据")

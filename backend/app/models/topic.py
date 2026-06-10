@@ -48,6 +48,7 @@ class HotTopic(SQLModel, table=True):
         default_factory=datetime.now,
         description="采集时间"
     )
+    agent_task_id: Optional[str] = Field(default=None, max_length=64, description="关联的 Agent 任务ID")
 
 
 class Topic(SQLModel, table=True):
