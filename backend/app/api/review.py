@@ -35,3 +35,10 @@ def get_review(review_id: int, session: Session = Depends(get_sync_session)):
 @router.put("/{review_id}", response_model=ReviewResponse, summary="更新审核记录")
 def update_review(review_id: int, data: ReviewUpdate, session: Session = Depends(get_sync_session)):
     return ReviewResponse.model_validate(review_service.update_review(session, review_id, data))
+
+
+@router.post("/auto/{content_id}", response_model=ReviewResponse, status_code=201, summary="AI自动审核内容")
+def auto_review_content(content_id: int, session: Session = Depends(get_sync_session)):
+    """AI 自动审核指定内容，检测敏感信息和违规内容，并创建审核记录"""
+    review = review_service.auto_review_content(session, content_id)
+    return ReviewResponse.model_validate(review)

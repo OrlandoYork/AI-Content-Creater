@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
-  Table, Tag, Button, Space, Select, Tooltip, message, Modal, Descriptions,
+  Table, Tag, Button, Space, Select, Tooltip, message, Modal, Descriptions, InputNumber,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
@@ -9,14 +9,31 @@ import {
   EyeOutlined,
   ReloadOutlined,
   ExperimentOutlined,
+  SafetyCertificateOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useReviewStore } from '../../stores/reviewStore';
 import type { Review } from '../../types';
 
+const RISK_LEVEL_LABELS: Record<string, string> = {
+  safe: '安全',
+  low: '低风险',
+  medium: '中风险',
+  high: '高风险',
+  unknown: '未知',
+};
+
+const RISK_LEVEL_COLORS: Record<string, string> = {
+  safe: 'green',
+  low: 'cyan',
+  medium: 'orange',
+  high: 'red',
+  unknown: 'default',
+};
+
 export default function ReviewQueue() {
   const {
-    reviews, reviewsTotal, reviewsLoading, loadReviews, updateReview,
+    reviews, reviewsTotal, reviewsLoading, loadReviews, updateReview, autoReviewContent,
   } = useReviewStore();
 
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -24,6 +41,9 @@ export default function ReviewQueue() {
   const [pageSize, setPageSize] = useState(20);
   const [detailVisible, setDetailVisible] = useState(false);
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
+  const [autoReviewVisible, setAutoReviewVisible] = useState(false);
+  const [autoReviewContentId, setAutoReviewContentId] = useState<number | null>(null);
+  const [autoReviewLoading, setAutoReviewLoading] = useState(false);
 
   useEffect(() => {
     loadReviews({
@@ -49,9 +69,31 @@ export default function ReviewQueue() {
     } catch { message.error('操作失败'); }
   }, [statusFilter, page, pageSize]);
 
+  const handleAutoReview = useCallback(async () => {
+    if (!autoReviewContentId) return;
+    setAutoReviewLoading(true);
+    try {
+      const review = await autoReviewContent(autoReviewContentId);
+      message.success(`AI审核完成 — 风险等级: ${RISK_LEVEL_LABELS[extractRiskLevel(review)]}`);
+      setAutoReviewVisible(false);
+      loadReviews({ page, page_size: pageSize });
+    } catch { message.error('AI审核失败'); }
+    finally { setAutoReviewLoading(false); }
+  }, [autoReviewContentId, page, pageSize]);
+
   const showDetail = (record: Review) => {
     setSelectedReview(record);
     setDetailVisible(true);
+  };
+
+  const extractRiskLevel = (review: Review): string => {
+    try {
+      const notes = review.reviewer_notes || '';
+      if (notes.includes('高风险')) return 'high';
+      if (notes.includes('中风险')) return 'medium';
+      if (notes.includes('低风险')) return 'low';
+      return 'safe';
+    } catch { return 'unknown'; }
   };
 
   const columns: ColumnsType<Review> = [
@@ -74,6 +116,16 @@ export default function ReviewQueue() {
       ),
     },
     {
+      title: '安全等级',
+      dataIndex: 'reviewer_notes',
+      key: 'risk_level',
+      width: 100,
+      render: (v: string) => {
+        const level = extractRiskLevel({ reviewer_notes: v } as Review);
+        return <Tag color={RISK_LEVEL_COLORS[level]}>{RISK_LEVEL_LABELS[level]}</Tag>;
+      },
+    },
+    {
       title: '审核结果',
       dataIndex: 'is_approved',
       key: 'is_approved',
@@ -88,7 +140,7 @@ export default function ReviewQueue() {
       title: '问题摘要',
       dataIndex: 'issues',
       key: 'issues',
-      width: 250,
+      width: 220,
       ellipsis: true,
       render: (v: string) => {
         try {
@@ -121,7 +173,7 @@ export default function ReviewQueue() {
     {
       title: '操作',
       key: 'actions',
-      width: 200,
+      width: 240,
       fixed: 'right',
       render: (_: any, record: Review) => (
         <Space size="small">
@@ -164,8 +216,12 @@ export default function ReviewQueue() {
         </Space>
         <Space>
           <Button icon={<ReloadOutlined />} onClick={() => loadReviews({ page, page_size: pageSize })}>刷新</Button>
-          <Button type="primary" icon={<ExperimentOutlined />} onClick={() => loadReviews({ page, page_size: pageSize })}>
-            模拟审核
+          <Button
+            type="primary"
+            icon={<SafetyCertificateOutlined />}
+            onClick={() => setAutoReviewVisible(true)}
+          >
+            AI 自动审核
           </Button>
         </Space>
       </div>
@@ -184,7 +240,7 @@ export default function ReviewQueue() {
           ),
           onChange: (p, ps) => { setPage(p); setPageSize(ps); },
         }}
-        scroll={{ x: 1100 }}
+        scroll={{ x: 1150 }}
       />
 
       {/* Detail Modal */}
@@ -198,6 +254,11 @@ export default function ReviewQueue() {
         {selectedReview && (
           <Descriptions column={1} bordered size="small">
             <Descriptions.Item label="内容ID">{selectedReview.content_id}</Descriptions.Item>
+            <Descriptions.Item label="安全等级">
+              <Tag color={RISK_LEVEL_COLORS[extractRiskLevel(selectedReview)]}>
+                {RISK_LEVEL_LABELS[extractRiskLevel(selectedReview)]}
+              </Tag>
+            </Descriptions.Item>
             <Descriptions.Item label="审核结果">
               <Tag color={selectedReview.is_approved ? 'green' : 'red'}>
                 {selectedReview.is_approved ? '已通过' : '未通过'}
@@ -220,6 +281,42 @@ export default function ReviewQueue() {
             <Descriptions.Item label="创建时间">{dayjs(selectedReview.created_at).format('YYYY-MM-DD HH:mm:ss')}</Descriptions.Item>
           </Descriptions>
         )}
+      </Modal>
+
+      {/* Auto Review Modal */}
+      <Modal
+        title="AI 自动内容审核"
+        open={autoReviewVisible}
+        onCancel={() => setAutoReviewVisible(false)}
+        onOk={handleAutoReview}
+        confirmLoading={autoReviewLoading}
+        okText="开始 AI 审核"
+        cancelText="取消"
+      >
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 12 }}>
+            AI 审核将自动检测以下内容风险：
+          </div>
+          <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 2 }}>
+            <li>色情低俗内容</li>
+            <li>暴力恐怖信息</li>
+            <li>政治敏感表述</li>
+            <li>违法或违规信息</li>
+            <li>广告法违规词</li>
+            <li>虚假或误导性信息</li>
+            <li>个人隐私泄露</li>
+          </ul>
+        </div>
+        <div>
+          <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>内容ID：</span>
+          <InputNumber
+            min={1}
+            placeholder="输入要审核的内容ID"
+            value={autoReviewContentId}
+            onChange={(v) => setAutoReviewContentId(v)}
+            style={{ width: '100%', marginTop: 8 }}
+          />
+        </div>
       </Modal>
     </div>
   );

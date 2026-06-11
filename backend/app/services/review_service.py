@@ -3,11 +3,16 @@ from datetime import datetime
 from typing import List, Tuple, Optional
 from sqlmodel import Session, select, func
 from app.models.review import Review
+from app.models.content import Content
 from app.schemas.review import ReviewCreate, ReviewUpdate
 from app.core.exceptions import NotFoundException
+from app.services.coze_service import CozeService
 
 
 class ReviewService:
+    def __init__(self):
+        self._coze = CozeService()
+
     def list_reviews(self, session: Session, content_id: Optional[int] = None,
                      is_approved: Optional[bool] = None, page: int = 1, page_size: int = 20) -> Tuple[List[Review], int]:
         query = select(Review)
@@ -42,6 +47,34 @@ class ReviewService:
         for key, value in update_data.items():
             setattr(review, key, value)
         review.reviewed_at = datetime.now()
+        session.add(review)
+        session.commit()
+        session.refresh(review)
+        return review
+
+    def auto_review_content(self, session: Session, content_id: int) -> Review:
+        """AI 自动审核内容并创建审核记录"""
+        # 获取内容
+        content = session.get(Content, content_id)
+        if not content:
+            raise NotFoundException(f"内容不存在: id={content_id}")
+
+        # 调用 AI 审核
+        result = self._coze.review_content(
+            content_body=content.body,
+            content_type=content.content_type,
+            title=content.title,
+        )
+
+        # 创建审核记录
+        import json
+        review = Review(
+            content_id=content_id,
+            is_approved=result["is_approved"],
+            issues=json.dumps(result["issues"], ensure_ascii=False),
+            reviewer_notes=result["reviewer_notes"],
+            reviewed_at=datetime.now(),
+        )
         session.add(review)
         session.commit()
         session.refresh(review)

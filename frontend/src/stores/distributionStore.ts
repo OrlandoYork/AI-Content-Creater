@@ -16,6 +16,9 @@ interface DistributionStore {
   createDistribution: (data: DistributionCreate) => Promise<Distribution>;
   loadDistributionDetail: (id: number) => Promise<void>;
   updateDistribution: (id: number, data: Record<string, unknown>) => Promise<void>;
+  batchDistribute: (contentId: number, platforms: string[]) => Promise<Distribution[]>;
+  publishDistribution: (id: number) => Promise<Distribution>;
+  cancelDistribution: (id: number) => Promise<Distribution>;
   loadCalendar: (year: number, month: number) => Promise<void>;
   clearCurrentDistribution: () => void;
 }
@@ -58,6 +61,21 @@ export const useDistributionStore = create<DistributionStore>((set) => ({
   updateDistribution: async (id, data) => {
     const updated = await distributionApi.updateDistribution(id, data as Parameters<typeof distributionApi.updateDistribution>[1]);
     set({ currentDistribution: updated });
+  },
+
+  batchDistribute: async (contentId, platforms) => {
+    const dists = await distributionApi.batchDistribute(contentId, platforms);
+    return dists;
+  },
+
+  publishDistribution: async (id) => {
+    const dist = await distributionApi.publishDistribution(id);
+    return dist;
+  },
+
+  cancelDistribution: async (id) => {
+    const dist = await distributionApi.cancelDistribution(id);
+    return dist;
   },
 
   loadCalendar: async (year, month) => {

@@ -913,3 +913,142 @@ JSON 格式：
         # 过滤掉明显不是标题的内容（太短、错误消息等）
         titles = [t for t in titles if len(t) >= 3 and not t.startswith(('错误', 'Error', '```'))]
         return titles[:count]
+
+    # ==================== 内容安全审核 ====================
+
+    def review_content(
+        self, content_body: str, content_type: str = "article", title: str = ""
+    ) -> dict:
+        """AI 内容安全审核
+
+        对内容进行多维度安全审查，检测敏感信息和违规内容。
+
+        Returns:
+            {
+                "is_approved": bool,
+                "risk_level": "safe" | "low" | "medium" | "high",
+                "issues": [str],
+                "reviewer_notes": str
+            }
+        """
+        if not self.available:
+            raise AIGenerationException("DeepSeek 不可用，无法进行 AI 审核")
+
+        # 截断过长内容（保留前 3000 字符足够审核）
+        body_preview = content_body[:3000]
+        if len(content_body) > 3000:
+            body_preview += "\n\n[内容过长，已截断...]"
+
+        system_prompt = """你是一个严格的内容安全审核专家。你需要审查以下内容，检查是否包含违规信息。
+
+审核维度（七大类）：
+1. 色情低俗 — 涉黄、性暗示、低俗图片描述
+2. 暴力恐怖 — 暴力细节、恐怖主义、血腥描述
+3. 政治敏感 — 攻击体制、分裂言论、敏感历史事件
+4. 违法信息 — 赌博、毒品、诈骗、传销等违法内容
+5. 广告法违规 — 虚假广告、极限词（"最""第一""国家级"等）
+6. 虚假信息 — 明显的谣言、不实信息、误导性陈述
+7. 隐私泄露 — 包含真实姓名、电话、地址、身份证号等个人信息
+
+请严格按照以下 JSON 格式输出（不要任何额外文字）：
+{"is_approved": bool, "risk_level": "safe"|"low"|"medium"|"high", "issues": ["问题描述1", "问题描述2"], "reviewer_notes": "审核意见总结"}
+
+规则：
+- is_approved: 没有任何违规为 true，有任何问题为 false
+- risk_level: 无问题=safe，轻微/low，明显/medium，严重/high
+- issues: 列出所有发现的问题，准确描述违规类型和位置；无问题则为空数组 []
+- reviewer_notes: 50字以内的审核总结"""
+
+        user_prompt = f"内容类型：{content_type}\n标题：{title}\n\n待审核内容：\n{body_preview}"
+
+        try:
+            raw = self._call(system_prompt, user_prompt, temperature=0.3)
+            logger.info("DeepSeek AI 内容审核完成")
+            result = self._extract_json(raw)
+            return {
+                "is_approved": result.get("is_approved", True),
+                "risk_level": result.get("risk_level", "safe"),
+                "issues": result.get("issues", []),
+                "reviewer_notes": result.get("reviewer_notes", "审核完成"),
+            }
+        except (AIGenerationException, ValueError) as e:
+            logger.warning("AI 审核失败: %s", str(e)[:200])
+            return {
+                "is_approved": True,
+                "risk_level": "unknown",
+                "issues": [],
+                "reviewer_notes": f"AI审核服务暂时不可用: {str(e)[:80]}",
+            }
+
+    # ==================== 多平台内容适配 ====================
+
+    def adapt_for_platform(
+        self,
+        content_body: str,
+        content_type: str,
+        target_platform: str,
+        platform_rules: dict,
+    ) -> dict:
+        """AI 多平台内容适配
+
+        根据不同平台的规则和特点，自动调整内容格式。
+
+        Returns:
+            {
+                "adapted_body": str,
+                "suggested_title": str,
+                "hashtags": [str],
+                "image_suggestions": str
+            }
+        """
+        if not self.available:
+            raise AIGenerationException("DeepSeek 不可用，无法进行平台适配")
+
+        # 截断过长内容
+        body_preview = content_body[:2500]
+        if len(content_body) > 2500:
+            body_preview += "\n\n[内容过长，已截断...]"
+
+        rules_desc = f"""平台：{target_platform}
+字数限制：{platform_rules.get('max_chars', '无限制')} 字
+支持图片：{'是' if platform_rules.get('supports_images') else '否'}
+标签格式：{platform_rules.get('hashtag_style', '不支持')}
+最佳发布时间：{platform_rules.get('optimal_time', '未指定')}
+风格特点：{platform_rules.get('tone', '通用')}
+最佳实践：{platform_rules.get('best_practices', '')}"""
+
+        system_prompt = f"""你是一个多平台内容运营专家。你需要将内容适配到指定平台。
+
+平台规则：
+{rules_desc}
+
+适配要求：
+1. 严格遵守字数限制（超出的内容要精简，不足的适当扩写）
+2. 根据平台调性调整语气和表达方式
+3. 使用平台合适的标签格式（如有）
+4. 保持核心信息和关键数据不变
+5. 生成3-5个该平台的热门标签
+
+请严格按照以下 JSON 格式输出（不要任何额外文字）：
+{{"adapted_body": "适配后的完整内容", "suggested_title": "建议标题", "hashtags": ["#标签1", "#标签2", "#标签3"], "image_suggestions": "配图建议（一句话描述）"}}"""
+
+        user_prompt = f"内容类型：{content_type}\n\n原始内容：\n{body_preview}"
+
+        try:
+            raw = self._call(system_prompt, user_prompt, temperature=0.7)
+            logger.info("DeepSeek 平台适配完成: %s", target_platform)
+            result = self._extract_json(raw)
+            return {
+                "adapted_body": result.get("adapted_body", content_body),
+                "suggested_title": result.get("suggested_title", ""),
+                "hashtags": result.get("hashtags", []),
+                "image_suggestions": result.get("image_suggestions", ""),
+            }
+        except (AIGenerationException, ValueError) as e:
+            logger.warning("平台适配失败: %s", str(e)[:200])
+            return {
+                "adapted_body": content_body,
+                "suggested_title": "",
+                "hashtags": [],
+                "image_suggestions": "",
+            }

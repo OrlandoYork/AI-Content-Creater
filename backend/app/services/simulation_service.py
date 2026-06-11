@@ -7,7 +7,7 @@
 DeepSeek 不可用时回退到内置模板。
 生成后通过 AI 智能去重，消除跨平台重复话题。
 
-v2.0: 5平台（微博/知乎/抖音/百度/搜狐新闻），每平台15条 = 75条热点
+v2.0: 5平台（微博/知乎/抖音/百度/搜狐新闻），每平台5条 = 25条热点
 """
 import random
 import logging
@@ -26,7 +26,7 @@ class SimulationService:
     def __init__(self):
         self._ai = DeepSeekService()
 
-    # 模拟热点话题素材库（5平台，每平台15条模板）
+    # 模拟热点话题素材库（5平台，每平台5条模板）
     _HOT_TOPIC_TEMPLATES: Dict[str, List[str]] = {
         "weibo": [
             "某顶流明星深夜发文回应恋情传闻",
@@ -282,7 +282,7 @@ class SimulationService:
         - complete: 全部完成
 
         Args:
-            count: 总生成数量（默认75）
+            count: 总生成数量（默认25）
 
         Yields:
             dict: {"event": str, "data": dict}

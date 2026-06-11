@@ -632,3 +632,139 @@ class CozeService:
                 seen.add(t)
                 result.append(t)
         return result
+
+    # ==================== Phase 5 Mock 实现 ====================
+
+    def review_content(
+        self, content_body: str, content_type: str = "article", title: str = ""
+    ) -> dict:
+        """AI 内容安全审核 — DeepSeek 优先，失败则 Mock"""
+        try:
+            result = self._ai.review_content(content_body, content_type, title)
+            logger.info("DeepSeek AI 审核完成: 风险等级=%s", result.get("risk_level"))
+            return result
+        except AIGenerationException as e:
+            logger.warning("DeepSeek AI 审核失败，回退 Mock: %s", str(e)[:100])
+        except Exception as e:
+            logger.error("AI 审核异常: %s", str(e), exc_info=True)
+            raise
+        return self._mock_review_content(content_body, content_type)
+
+    def _mock_review_content(
+        self, content_body: str, content_type: str = "article"
+    ) -> dict:
+        """Mock: 内容安全审核 — 模拟真实审核逻辑"""
+        import random as _random
+        import re as _re
+
+        body_lower = content_body.lower()
+
+        # 模拟检测关键词
+        detected_issues = []
+
+        sensitivity_keywords = [
+            ("习近平", "政治敏感", "内容包含国家领导人姓名，需人工确认使用语境"),
+            ("台独", "政治敏感", "内容可能涉及分裂言论"),
+            ("法轮功", "违法信息", "内容包含非法组织名称"),
+            ("赌博", "违法信息", "内容提及赌博相关内容"),
+            ("毒品", "违法信息", "内容包含毒品相关词汇"),
+            ("最有效", "广告法违规", "使用极限词'最'，可能违反广告法"),
+            ("100%有效", "广告法违规", "包含绝对化承诺表述"),
+            ("身份证号", "隐私泄露", "可能包含个人身份信息"),
+        ]
+
+        for keyword, category, desc in sensitivity_keywords:
+            if keyword.lower() in body_lower:
+                detected_issues.append(f"[{category}] {desc}")
+
+        # 随机10%概率增加一条轻度提醒（模拟真实审核的不确定性）
+        if _random.random() < 0.10:
+            generic_notes = [
+                "建议确认内容中的引用来源是否可靠",
+                "部分表述可能引发争议，建议适当修改",
+                "标题党嫌疑，建议标题与正文内容更加一致",
+                "建议增加免责声明",
+            ]
+            detected_issues.append(f"[内容质量] {_random.choice(generic_notes)}")
+
+        if detected_issues:
+            risk_levels = {"政治敏感": "high", "违法信息": "high", "广告法违规": "medium",
+                          "隐私泄露": "high", "内容质量": "low"}
+            max_risk = max((risk_levels.get(issue.split("]")[0][1:], "low") for issue in detected_issues),
+                          key=lambda r: {"safe": 0, "low": 1, "medium": 2, "high": 3}.get(r, 0))
+            return {
+                "is_approved": max_risk != "high",
+                "risk_level": max_risk,
+                "issues": detected_issues,
+                "reviewer_notes": f"检测到 {len(detected_issues)} 个问题（Mock审核模式）",
+            }
+
+        return {
+            "is_approved": True,
+            "risk_level": "safe",
+            "issues": [],
+            "reviewer_notes": "模拟审核通过 — 未检测到违规内容（Mock模式）",
+        }
+
+    def adapt_for_platform(
+        self,
+        content_body: str,
+        content_type: str,
+        target_platform: str,
+        platform_rules: dict,
+    ) -> dict:
+        """AI 多平台内容适配 — DeepSeek 优先，失败则 Mock"""
+        try:
+            result = self._ai.adapt_for_platform(
+                content_body, content_type, target_platform, platform_rules
+            )
+            logger.info("DeepSeek 平台适配完成: %s", target_platform)
+            return result
+        except AIGenerationException as e:
+            logger.warning("DeepSeek 平台适配失败，回退 Mock: %s", str(e)[:100])
+        except Exception as e:
+            logger.error("平台适配异常: %s", str(e), exc_info=True)
+            raise
+        return self._mock_adapt_for_platform(content_body, content_type, target_platform, platform_rules)
+
+    def _mock_adapt_for_platform(
+        self,
+        content_body: str,
+        content_type: str,
+        target_platform: str,
+        platform_rules: dict,
+    ) -> dict:
+        """Mock: 平台适配 — 应用基础格式转换"""
+        max_chars = platform_rules.get("max_chars", 10000)
+        hashtag_style = platform_rules.get("hashtag_style", "")
+        tone = platform_rules.get("tone", "")
+
+        # 截断到字数限制
+        adapted = content_body[:max_chars]
+        if len(content_body) > max_chars:
+            adapted = adapted[:max_chars - 3] + "..."
+
+        # 根据平台风格添加标签
+        hashtags = []
+        if "douyin" in target_platform:
+            hashtags = ["#热点", "#涨知识", "#内容创作"]
+        elif "weibo" in target_platform:
+            hashtags = ["#热点话题#", "#内容分享#"]
+        elif "xiaohongshu" in target_platform:
+            hashtags = ["#干货分享", "#创作灵感", "#内容推荐"]
+
+        # 如果支持标签格式，追加标签
+        if hashtag_style and hashtags:
+            tag_text = " ".join(hashtags)
+            adapted = adapted + f"\n\n{tag_text}"
+
+        # 小红书风格：加 emoji
+        if "xiaohongshu" in target_platform and not adapted.startswith("✨"):
+            adapted = "✨ " + adapted
+
+        return {
+            "adapted_body": adapted,
+            "suggested_title": "",
+            "hashtags": hashtags,
+            "image_suggestions": f"适配{target_platform}平台的配图建议（Mock模式）",
+        }

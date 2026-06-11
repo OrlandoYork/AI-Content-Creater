@@ -26,3 +26,15 @@ export function updateDistribution(id: number, data: DistributionUpdate) {
 export function fetchCalendar(year: number, month: number) {
   return api.get('/distributions/calendar', { params: { year, month } }) as Promise<Record<string, unknown>>;
 }
+
+export function batchDistribute(contentId: number, platforms: string[]) {
+  return api.post(`/distributions/batch/${contentId}`, platforms) as Promise<Distribution[]>;
+}
+
+export function publishDistribution(id: number) {
+  return api.post(`/distributions/${id}/publish`) as Promise<Distribution>;
+}
+
+export function cancelDistribution(id: number) {
+  return api.post(`/distributions/${id}/cancel`) as Promise<Distribution>;
+}

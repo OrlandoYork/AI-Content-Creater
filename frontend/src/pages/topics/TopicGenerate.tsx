@@ -80,7 +80,7 @@ export default function TopicGenerate() {
   const [savingIds, setSavingIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
-    loadHotTopics({ page_size: 75 });
+    loadHotTopics({ page_size: 25 });
     return () => { cancelRefresh(); };
   }, []);
 

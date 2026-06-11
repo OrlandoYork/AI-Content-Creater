@@ -14,6 +14,7 @@ interface ReviewStore {
   createReview: (data: ReviewCreate) => Promise<Review>;
   loadReviewDetail: (id: number) => Promise<void>;
   updateReview: (id: number, data: { is_approved?: boolean; issues?: string; reviewer_notes?: string }) => Promise<void>;
+  autoReviewContent: (contentId: number) => Promise<Review>;
   clearCurrentReview: () => void;
 }
 
@@ -53,6 +54,11 @@ export const useReviewStore = create<ReviewStore>((set) => ({
   updateReview: async (id, data) => {
     const updated = await reviewApi.updateReview(id, data);
     set({ currentReview: updated });
+  },
+
+  autoReviewContent: async (contentId) => {
+    const review = await reviewApi.autoReviewContent(contentId);
+    return review;
   },
 
   clearCurrentReview: () => set({ currentReview: null }),

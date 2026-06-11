@@ -43,7 +43,7 @@ def _sse_event(event: str, data: dict) -> str:
 def list_hot_topics(
     platform: Optional[str] = Query(default=None, description="来源平台筛选"),
     page: int = Query(default=1, ge=1, description="页码"),
-    page_size: int = Query(default=75, ge=1, le=100, description="每页数量"),
+    page_size: int = Query(default=25, ge=1, le=100, description="每页数量"),
     session: Session = Depends(get_sync_session),
 ):
     """获取模拟热点话题列表，支持按平台筛选和分页"""

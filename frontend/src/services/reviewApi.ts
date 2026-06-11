@@ -21,3 +21,7 @@ export function createReview(data: ReviewCreate) {
 export function updateReview(id: number, data: ReviewUpdate) {
   return api.put(`/reviews/${id}`, data) as Promise<Review>;
 }
+
+export function autoReviewContent(contentId: number) {
+  return api.post(`/reviews/auto/${contentId}`) as Promise<Review>;
+}
