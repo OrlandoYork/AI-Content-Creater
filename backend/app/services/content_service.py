@@ -139,6 +139,11 @@ class ContentService:
             status="draft",
         )
         session.add(content)
+        session.flush()
+
+        # 关联选题状态更新为"创作中"
+        topic.status = "in_progress"
+        session.add(topic)
         session.commit()
         session.refresh(content)
 

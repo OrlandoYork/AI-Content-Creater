@@ -6,6 +6,7 @@ from typing import List, Tuple, Optional
 from sqlmodel import Session, select, func
 from app.models.distribution import Distribution
 from app.models.content import Content
+from app.models.topic import Topic
 from app.schemas.distribution import DistributionCreate, DistributionUpdate
 from app.core.exceptions import NotFoundException
 from app.services.coze_service import CozeService
@@ -85,9 +86,27 @@ class DistributionService:
     def __init__(self):
         self._coze = CozeService()
 
+    @staticmethod
+    def _enrich_with_title(session: Session, dist: Distribution) -> dict:
+        """Enrich a distribution dict with the content's title"""
+        content = session.get(Content, dist.content_id)
+        title = content.title if content else ""
+        return {
+            "id": dist.id,
+            "content_id": dist.content_id,
+            "content_title": title,
+            "platform": dist.platform,
+            "publish_url": dist.publish_url or "",
+            "status": dist.status,
+            "scheduled_time": dist.scheduled_time,
+            "published_at": dist.published_at,
+            "platform_data": dist.platform_data or "{}",
+            "created_at": dist.created_at,
+        }
+
     def list_distributions(self, session: Session, content_id: Optional[int] = None,
                            platform: Optional[str] = None, status: Optional[str] = None,
-                           page: int = 1, page_size: int = 20) -> Tuple[List[Distribution], int]:
+                           page: int = 1, page_size: int = 20) -> Tuple[List[dict], int]:
         query = select(Distribution)
         count_query = select(func.count(Distribution.id))
         if content_id:
@@ -102,9 +121,10 @@ class DistributionService:
         total = session.exec(count_query).one()
         offset = (page - 1) * page_size
         query = query.order_by(Distribution.created_at.desc()).offset(offset).limit(page_size)
-        return list(session.exec(query).all()), total
+        dists = list(session.exec(query).all())
+        return [self._enrich_with_title(session, d) for d in dists], total
 
-    def create_distribution(self, session: Session, data: DistributionCreate) -> Distribution:
+    def create_distribution(self, session: Session, data: DistributionCreate) -> dict:
         """创建分发记录 — 自动进行 AI 平台适配，状态设为 pending"""
         # 获取原始内容
         content = session.get(Content, data.content_id)
@@ -134,26 +154,27 @@ class DistributionService:
         session.add(dist)
         session.commit()
         session.refresh(dist)
-        return dist
+        return self._enrich_with_title(session, dist)
 
     def batch_create_distributions(
         self, session: Session, content_id: int, platforms: List[str]
-    ) -> List[Distribution]:
+    ) -> List[dict]:
         """一键分发到多个平台"""
         results = []
         for plat in platforms:
             if plat in PLATFORMS:
-                from app.schemas.distribution import DistributionCreate
                 data = DistributionCreate(content_id=content_id, platform=plat)
                 dist = self.create_distribution(session, data)
                 results.append(dist)
         return results
 
-    def publish_distribution(self, session: Session, distribution_id: int) -> Distribution:
-        """发布指定分发记录"""
-        dist = self.get_distribution(session, distribution_id)
+    def publish_distribution(self, session: Session, distribution_id: int) -> dict:
+        """发布指定分发记录 — 如果该内容所有分发都已发布，完成内容和选题"""
+        dist = session.get(Distribution, distribution_id)
+        if not dist:
+            raise NotFoundException(f"分发记录不存在: id={distribution_id}")
         if dist.status == "published":
-            return dist  # 已经发布
+            return self._enrich_with_title(session, dist)  # 已经发布
         dist.status = "published"
         dist.published_at = datetime.now()
         if not dist.publish_url:
@@ -161,11 +182,33 @@ class DistributionService:
         session.add(dist)
         session.commit()
         session.refresh(dist)
-        return dist
 
-    def cancel_distribution(self, session: Session, distribution_id: int) -> Distribution:
+        # 检查该内容的所有分发是否都已发布
+        all_dists = session.exec(
+            select(Distribution).where(Distribution.content_id == dist.content_id)
+        ).all()
+        all_published = all(d.status == "published" for d in all_dists)
+        if all_published:
+            content = session.get(Content, dist.content_id)
+            if content:
+                content.status = "completed"
+                session.add(content)
+                # 更新关联选题状态
+                if content.topic_id:
+                    topic = session.get(Topic, content.topic_id)
+                    if topic and topic.status == "in_progress":
+                        topic.status = "completed"
+                        session.add(topic)
+            session.commit()
+            session.refresh(dist)
+
+        return self._enrich_with_title(session, dist)
+
+    def cancel_distribution(self, session: Session, distribution_id: int) -> dict:
         """取消分发"""
-        dist = self.get_distribution(session, distribution_id)
+        dist = session.get(Distribution, distribution_id)
+        if not dist:
+            raise NotFoundException(f"分发记录不存在: id={distribution_id}")
         if dist.status in ("published", "cancelled"):
             from app.core.exceptions import BusinessException
             raise BusinessException(f"无法取消状态为 {dist.status} 的分发")
@@ -173,23 +216,25 @@ class DistributionService:
         session.add(dist)
         session.commit()
         session.refresh(dist)
-        return dist
+        return self._enrich_with_title(session, dist)
 
-    def get_distribution(self, session: Session, distribution_id: int) -> Distribution:
+    def get_distribution(self, session: Session, distribution_id: int) -> dict:
         dist = session.get(Distribution, distribution_id)
         if not dist:
             raise NotFoundException(f"分发记录不存在: id={distribution_id}")
-        return dist
+        return self._enrich_with_title(session, dist)
 
-    def update_distribution(self, session: Session, distribution_id: int, data: DistributionUpdate) -> Distribution:
-        dist = self.get_distribution(session, distribution_id)
+    def update_distribution(self, session: Session, distribution_id: int, data: DistributionUpdate) -> dict:
+        dist = session.get(Distribution, distribution_id)
+        if not dist:
+            raise NotFoundException(f"分发记录不存在: id={distribution_id}")
         update_data = data.model_dump(exclude_unset=True)
         for key, value in update_data.items():
             setattr(dist, key, value)
         session.add(dist)
         session.commit()
         session.refresh(dist)
-        return dist
+        return self._enrich_with_title(session, dist)
 
     def get_calendar(self, session: Session, year: int, month: int) -> List[dict]:
         query = select(Distribution).where(
@@ -198,7 +243,15 @@ class DistributionService:
             func.extract('month', Distribution.scheduled_time) == month,
         )
         records = session.exec(query).all()
-        return [{"id": r.id, "content_id": r.content_id, "platform": r.platform,
-                 "status": r.status, "scheduled_time": r.scheduled_time.isoformat() if r.scheduled_time else None,
-                 "publish_url": r.publish_url}
-                for r in records]
+        result = []
+        for r in records:
+            content = session.get(Content, r.content_id)
+            result.append({
+                "id": r.id, "content_id": r.content_id,
+                "content_title": content.title if content else "",
+                "platform": r.platform,
+                "status": r.status,
+                "scheduled_time": r.scheduled_time.isoformat() if r.scheduled_time else None,
+                "publish_url": r.publish_url or "",
+            })
+        return result

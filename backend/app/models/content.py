@@ -32,7 +32,7 @@ class Content(SQLModel, table=True):
     status: str = Field(
         max_length=50,
         default="draft",
-        description="状态：draft/completed/archived"
+        description="状态：draft/pending_review/approved/completed/archived"
     )
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)

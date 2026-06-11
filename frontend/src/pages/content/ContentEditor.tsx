@@ -174,11 +174,29 @@ export default function ContentEditor() {
       await updateContent(targetId, {
         title: editingTitle,
         body: editingBody,
-        status: 'completed',
+        status: 'draft',
       });
-      message.success('内容已保存');
+      message.success('内容已保存为草稿');
     } catch {
       message.error('保存失败');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSubmitForReview = async () => {
+    const targetId = isViewMode ? currentContent?.id : generatedResult?.id;
+    if (!targetId) return;
+    setSaving(true);
+    try {
+      await updateContent(targetId, {
+        title: editingTitle,
+        body: editingBody,
+        status: 'pending_review',
+      });
+      message.success('已提交审核，可在审核中心查看');
+    } catch {
+      message.error('提交失败');
     } finally {
       setSaving(false);
     }

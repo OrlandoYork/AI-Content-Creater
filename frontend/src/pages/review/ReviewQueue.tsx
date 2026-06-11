@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
-  Table, Tag, Button, Space, Select, Tooltip, message, Modal, Descriptions, InputNumber,
+  Table, Tag, Button, Space, Select, Tooltip, message, Modal, Descriptions,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
@@ -8,11 +8,13 @@ import {
   CloseOutlined,
   EyeOutlined,
   ReloadOutlined,
-  ExperimentOutlined,
   SafetyCertificateOutlined,
+  SendOutlined,
+  RollbackOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useReviewStore } from '../../stores/reviewStore';
+import { CONTENT_TYPE_LABELS } from '../../types';
 import type { Review } from '../../types';
 
 const RISK_LEVEL_LABELS: Record<string, string> = {
@@ -33,21 +35,24 @@ const RISK_LEVEL_COLORS: Record<string, string> = {
 
 export default function ReviewQueue() {
   const {
-    reviews, reviewsTotal, reviewsLoading, loadReviews, updateReview, autoReviewContent,
+    reviews, reviewsTotal, reviewsLoading,
+    loadReviews, updateReview, autoReviewContent,
+    approveReview, rejectReview,
+    contentList, contentListLoading, loadContentList,
   } = useReviewStore();
 
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('pending');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [detailVisible, setDetailVisible] = useState(false);
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
   const [autoReviewVisible, setAutoReviewVisible] = useState(false);
-  const [autoReviewContentId, setAutoReviewContentId] = useState<number | null>(null);
+  const [selectedContentId, setSelectedContentId] = useState<number | null>(null);
   const [autoReviewLoading, setAutoReviewLoading] = useState(false);
 
   useEffect(() => {
     loadReviews({
-      is_approved: statusFilter !== 'all' ? statusFilter === 'approved' : undefined,
+      review_status: statusFilter !== 'all' ? statusFilter : undefined,
       page,
       page_size: pageSize,
     });
@@ -55,35 +60,44 @@ export default function ReviewQueue() {
 
   const handleApprove = useCallback(async (id: number) => {
     try {
-      await updateReview(id, { is_approved: true, reviewer_notes: '审核通过' });
-      message.success('审核已通过');
-      loadReviews({ is_approved: statusFilter !== 'all' ? statusFilter === 'approved' : undefined, page, page_size: pageSize });
+      const result = await approveReview(id);
+      message.success(result.message || '审核通过，已分发到发布中心');
+      loadReviews({ review_status: statusFilter !== 'all' ? statusFilter : undefined, page, page_size: pageSize });
     } catch { message.error('操作失败'); }
   }, [statusFilter, page, pageSize]);
 
   const handleReject = useCallback(async (id: number) => {
     try {
-      await updateReview(id, { is_approved: false, reviewer_notes: '审核不通过，需修改' });
-      message.warning('已标记为未通过');
-      loadReviews({ is_approved: statusFilter !== 'all' ? statusFilter === 'approved' : undefined, page, page_size: pageSize });
+      const result = await rejectReview(id);
+      message.info(result.message || '审核不通过，已打回内容编辑页面');
+      loadReviews({ review_status: statusFilter !== 'all' ? statusFilter : undefined, page, page_size: pageSize });
     } catch { message.error('操作失败'); }
   }, [statusFilter, page, pageSize]);
 
   const handleAutoReview = useCallback(async () => {
-    if (!autoReviewContentId) return;
+    if (!selectedContentId) {
+      message.warning('请选择要审核的内容');
+      return;
+    }
     setAutoReviewLoading(true);
     try {
-      const review = await autoReviewContent(autoReviewContentId);
+      const review = await autoReviewContent(selectedContentId);
       message.success(`AI审核完成 — 风险等级: ${RISK_LEVEL_LABELS[extractRiskLevel(review)]}`);
       setAutoReviewVisible(false);
-      loadReviews({ page, page_size: pageSize });
+      setSelectedContentId(null);
+      loadReviews({ review_status: statusFilter !== 'all' ? statusFilter : undefined, page, page_size: pageSize });
     } catch { message.error('AI审核失败'); }
     finally { setAutoReviewLoading(false); }
-  }, [autoReviewContentId, page, pageSize]);
+  }, [selectedContentId, statusFilter, page, pageSize]);
 
   const showDetail = (record: Review) => {
     setSelectedReview(record);
     setDetailVisible(true);
+  };
+
+  const openAutoReview = () => {
+    loadContentList();
+    setAutoReviewVisible(true);
   };
 
   const extractRiskLevel = (review: Review): string => {
@@ -107,12 +121,13 @@ export default function ReviewQueue() {
       ),
     },
     {
-      title: '内容ID',
-      dataIndex: 'content_id',
-      key: 'content_id',
-      width: 100,
-      render: (v: number) => (
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>#{v}</span>
+      title: '内容标题',
+      dataIndex: 'content_title',
+      key: 'content_title',
+      width: 280,
+      ellipsis: true,
+      render: (v: string) => (
+        <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{v || '—'}</span>
       ),
     },
     {
@@ -126,21 +141,32 @@ export default function ReviewQueue() {
       },
     },
     {
-      title: '审核结果',
+      title: 'AI判断',
       dataIndex: 'is_approved',
       key: 'is_approved',
-      width: 100,
+      width: 90,
       render: (v: boolean) => (
         v
-          ? <Tag color="green">已通过</Tag>
-          : <Tag color="red">未通过</Tag>
+          ? <Tag color="green">合规</Tag>
+          : <Tag color="red">有问题</Tag>
       ),
+    },
+    {
+      title: '审核状态',
+      dataIndex: 'review_status',
+      key: 'review_status',
+      width: 100,
+      render: (v: string) => {
+        const labels: Record<string, string> = { pending: '待审核', approved: '已通过', rejected: '已驳回' };
+        const colors: Record<string, string> = { pending: 'blue', approved: 'green', rejected: 'red' };
+        return <Tag color={colors[v] || 'default'}>{labels[v] || v}</Tag>;
+      },
     },
     {
       title: '问题摘要',
       dataIndex: 'issues',
       key: 'issues',
-      width: 220,
+      width: 200,
       ellipsis: true,
       render: (v: string) => {
         try {
@@ -148,16 +174,6 @@ export default function ReviewQueue() {
           return <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{issues.length > 0 ? issues.slice(0, 2).join('；') : '无问题'}</span>;
         } catch { return <span>{v || '无问题'}</span>; }
       },
-    },
-    {
-      title: '审核备注',
-      dataIndex: 'reviewer_notes',
-      key: 'reviewer_notes',
-      width: 180,
-      ellipsis: true,
-      render: (v: string) => (
-        <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{v || '—'}</span>
-      ),
     },
     {
       title: '审核时间',
@@ -173,19 +189,23 @@ export default function ReviewQueue() {
     {
       title: '操作',
       key: 'actions',
-      width: 240,
+      width: 200,
       fixed: 'right',
       render: (_: any, record: Review) => (
         <Space size="small">
           <Tooltip title="查看详情">
             <Button type="text" size="small" icon={<EyeOutlined />} onClick={() => showDetail(record)} />
           </Tooltip>
-          <Tooltip title="审核通过">
-            <Button type="text" size="small" icon={<CheckOutlined />} style={{ color: 'var(--accent-green)' }} onClick={() => handleApprove(record.id)} />
-          </Tooltip>
-          <Tooltip title="审核不通过">
-            <Button type="text" size="small" danger icon={<CloseOutlined />} onClick={() => handleReject(record.id)} />
-          </Tooltip>
+          {record.review_status === 'pending' && (
+            <>
+              <Tooltip title="审核通过并分发">
+                <Button type="text" size="small" icon={<CheckOutlined />} style={{ color: 'var(--accent-green)' }} onClick={() => handleApprove(record.id)} />
+              </Tooltip>
+              <Tooltip title="驳回打回">
+                <Button type="text" size="small" danger icon={<CloseOutlined />} onClick={() => handleReject(record.id)} />
+              </Tooltip>
+            </>
+          )}
         </Space>
       ),
     },
@@ -208,18 +228,19 @@ export default function ReviewQueue() {
             onChange={(v) => { setStatusFilter(v); setPage(1); }}
             style={{ width: 150 }}
             options={[
-              { value: 'all', label: '全部状态' },
+              { value: 'pending', label: '待审核' },
               { value: 'approved', label: '已通过' },
-              { value: 'rejected', label: '未通过' },
+              { value: 'rejected', label: '已驳回' },
+              { value: 'all', label: '全部状态' },
             ]}
           />
         </Space>
         <Space>
-          <Button icon={<ReloadOutlined />} onClick={() => loadReviews({ page, page_size: pageSize })}>刷新</Button>
+          <Button icon={<ReloadOutlined />} onClick={() => loadReviews({ review_status: statusFilter !== 'all' ? statusFilter : undefined, page, page_size: pageSize })}>刷新</Button>
           <Button
             type="primary"
             icon={<SafetyCertificateOutlined />}
-            onClick={() => setAutoReviewVisible(true)}
+            onClick={openAutoReview}
           >
             AI 自动审核
           </Button>
@@ -240,7 +261,7 @@ export default function ReviewQueue() {
           ),
           onChange: (p, ps) => { setPage(p); setPageSize(ps); },
         }}
-        scroll={{ x: 1150 }}
+        scroll={{ x: 1200 }}
       />
 
       {/* Detail Modal */}
@@ -253,16 +274,24 @@ export default function ReviewQueue() {
       >
         {selectedReview && (
           <Descriptions column={1} bordered size="small">
+            <Descriptions.Item label="内容标题">{selectedReview.content_title || '—'}</Descriptions.Item>
             <Descriptions.Item label="内容ID">{selectedReview.content_id}</Descriptions.Item>
             <Descriptions.Item label="安全等级">
               <Tag color={RISK_LEVEL_COLORS[extractRiskLevel(selectedReview)]}>
                 {RISK_LEVEL_LABELS[extractRiskLevel(selectedReview)]}
               </Tag>
             </Descriptions.Item>
-            <Descriptions.Item label="审核结果">
+            <Descriptions.Item label="AI判断">
               <Tag color={selectedReview.is_approved ? 'green' : 'red'}>
-                {selectedReview.is_approved ? '已通过' : '未通过'}
+                {selectedReview.is_approved ? '合规' : '有问题'}
               </Tag>
+            </Descriptions.Item>
+            <Descriptions.Item label="审核状态">
+              {(() => {
+                const labels: Record<string, string> = { pending: '待审核', approved: '已通过', rejected: '已驳回' };
+                const colors: Record<string, string> = { pending: 'blue', approved: 'green', rejected: 'red' };
+                return <Tag color={colors[selectedReview.review_status] || 'default'}>{labels[selectedReview.review_status] || selectedReview.review_status}</Tag>;
+              })()}
             </Descriptions.Item>
             <Descriptions.Item label="问题">
               {(() => {
@@ -283,7 +312,7 @@ export default function ReviewQueue() {
         )}
       </Modal>
 
-      {/* Auto Review Modal */}
+      {/* Auto Review Modal — Select content by title */}
       <Modal
         title="AI 自动内容审核"
         open={autoReviewVisible}
@@ -308,13 +337,21 @@ export default function ReviewQueue() {
           </ul>
         </div>
         <div>
-          <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>内容ID：</span>
-          <InputNumber
-            min={1}
-            placeholder="输入要审核的内容ID"
-            value={autoReviewContentId}
-            onChange={(v) => setAutoReviewContentId(v)}
-            style={{ width: '100%', marginTop: 8 }}
+          <span style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 8, display: 'block' }}>选择要审核的内容：</span>
+          <Select
+            showSearch
+            placeholder="搜索并选择内容标题..."
+            loading={contentListLoading}
+            value={selectedContentId}
+            onChange={(v) => setSelectedContentId(v)}
+            style={{ width: '100%' }}
+            filterOption={(input, option) =>
+              (option?.label as string || '').toLowerCase().includes(input.toLowerCase())
+            }
+            options={contentList.map((c) => ({
+              value: c.id,
+              label: c.title,
+            }))}
           />
         </div>
       </Modal>

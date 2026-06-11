@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import type { Review, ReviewCreate } from '../types';
+import type { Content, Review, ReviewCreate } from '../types';
 import * as reviewApi from '../services/reviewApi';
+import * as contentApi from '../services/contentApi';
 
 interface ReviewStore {
   reviews: Review[];
@@ -10,11 +11,17 @@ interface ReviewStore {
   currentReview: Review | null;
   currentReviewLoading: boolean;
 
-  loadReviews: (params?: { content_id?: number; is_approved?: boolean; page?: number; page_size?: number }) => Promise<void>;
+  contentList: Content[];
+  contentListLoading: boolean;
+
+  loadReviews: (params?: { content_id?: number; is_approved?: boolean; review_status?: string; page?: number; page_size?: number }) => Promise<void>;
   createReview: (data: ReviewCreate) => Promise<Review>;
   loadReviewDetail: (id: number) => Promise<void>;
   updateReview: (id: number, data: { is_approved?: boolean; issues?: string; reviewer_notes?: string }) => Promise<void>;
   autoReviewContent: (contentId: number) => Promise<Review>;
+  approveReview: (id: number) => Promise<{ message: string; distribution_ids: number[] }>;
+  rejectReview: (id: number) => Promise<{ message: string }>;
+  loadContentList: () => Promise<void>;
   clearCurrentReview: () => void;
 }
 
@@ -25,6 +32,9 @@ export const useReviewStore = create<ReviewStore>((set) => ({
 
   currentReview: null,
   currentReviewLoading: false,
+
+  contentList: [],
+  contentListLoading: false,
 
   loadReviews: async (params) => {
     set({ reviewsLoading: true });
@@ -59,6 +69,26 @@ export const useReviewStore = create<ReviewStore>((set) => ({
   autoReviewContent: async (contentId) => {
     const review = await reviewApi.autoReviewContent(contentId);
     return review;
+  },
+
+  approveReview: async (id) => {
+    const result = await reviewApi.approveReview(id);
+    return result;
+  },
+
+  rejectReview: async (id) => {
+    const result = await reviewApi.rejectReview(id);
+    return result;
+  },
+
+  loadContentList: async () => {
+    set({ contentListLoading: true });
+    try {
+      const res = await contentApi.fetchContents({ page_size: 100 });
+      set({ contentList: res.items });
+    } finally {
+      set({ contentListLoading: false });
+    }
   },
 
   clearCurrentReview: () => set({ currentReview: null }),

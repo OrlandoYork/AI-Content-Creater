@@ -185,6 +185,9 @@
   },
   "active": "1b7ced37a3260863",
   "lastOpenFiles": [
+    "backend/app/services/simulation_service.py.tmp.2836.b9393a0f87dd",
+    "backend/app/services/simulation_service.py.tmp.2836.ca7dfa9bd664",
+    "backend/app/services/simulation_service.py.tmp.2836.965bc4011713",
     "docs/superpowers/plans/2026-06-10-agent-architecture-implementation.md",
     "frontend/src/pages/analytics/OptimizationPanel.tsx",
     "frontend/src/pages/analytics/ContentReport.tsx",
@@ -194,8 +197,6 @@
     "frontend/src/pages/distribution/DistributionCenter.tsx",
     "frontend/src/pages/distribution",
     "frontend/src/pages/review/ReviewQueue.tsx",
-    "frontend/src/pages/review",
-    "frontend/src/stores/analyticsStore.ts",
     "frontend/README.md",
     "CLAUDE.md",
     "AI全媒体内容生产与分发系统.md",

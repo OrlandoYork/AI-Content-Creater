@@ -11,5 +11,6 @@ class Review(SQLModel, table=True):
     is_approved: bool = Field(default=False)
     issues: Optional[str] = Field(default="[]")
     reviewer_notes: Optional[str] = Field(default="")
+    review_status: str = Field(default="pending", max_length=50, description="审核状态：pending/approved/rejected")
     reviewed_at: datetime = Field(default_factory=datetime.now)
     created_at: datetime = Field(default_factory=datetime.now)

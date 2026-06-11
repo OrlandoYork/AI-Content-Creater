@@ -8,18 +8,19 @@ import {
   EyeOutlined,
   ReloadOutlined,
   CalendarOutlined,
-  PlusOutlined,
   ThunderboltOutlined,
   CloseCircleOutlined,
   InfoCircleOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useDistributionStore } from '../../stores/distributionStore';
+import { useReviewStore } from '../../stores/reviewStore';
 import {
   DISTRIBUTION_STATUS_LABELS,
   DISTRIBUTION_STATUS_COLORS,
   DISTRIBUTION_PLATFORM_LABELS,
   PLATFORM_LABELS,
+  CONTENT_TYPE_LABELS,
 } from '../../types';
 import type { Distribution, DistributionStatus } from '../../types';
 
@@ -32,6 +33,8 @@ export default function DistributionCenter() {
     batchDistribute, publishDistribution, cancelDistribution,
   } = useDistributionStore();
 
+  const { contentList, contentListLoading, loadContentList } = useReviewStore();
+
   const [platformFilter, setPlatformFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [page, setPage] = useState(1);
@@ -39,7 +42,7 @@ export default function DistributionCenter() {
   const [detailVisible, setDetailVisible] = useState(false);
   const [selectedDist, setSelectedDist] = useState<Distribution | null>(null);
   const [batchVisible, setBatchVisible] = useState(false);
-  const [batchContentId, setBatchContentId] = useState<number | null>(null);
+  const [selectedBatchContentId, setSelectedBatchContentId] = useState<number | null>(null);
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(['weibo', 'douyin']);
   const [batchLoading, setBatchLoading] = useState(false);
 
@@ -55,32 +58,38 @@ export default function DistributionCenter() {
     try {
       await publishDistribution(id);
       message.success('发布成功');
-      loadDistributions({ page, page_size: pageSize });
+      loadDistributions({ platform: platformFilter !== 'all' ? platformFilter : undefined, status: statusFilter !== 'all' ? statusFilter : undefined, page, page_size: pageSize });
     } catch { message.error('发布失败'); }
-  }, [page, pageSize]);
+  }, [platformFilter, statusFilter, page, pageSize]);
 
   const handleCancel = useCallback(async (id: number) => {
     try {
       await cancelDistribution(id);
       message.info('已取消分发');
-      loadDistributions({ page, page_size: pageSize });
+      loadDistributions({ platform: platformFilter !== 'all' ? platformFilter : undefined, status: statusFilter !== 'all' ? statusFilter : undefined, page, page_size: pageSize });
     } catch { message.error('取消失败'); }
-  }, [page, pageSize]);
+  }, [platformFilter, statusFilter, page, pageSize]);
 
   const handleBatchDistribute = useCallback(async () => {
-    if (!batchContentId || selectedPlatforms.length === 0) {
-      message.warning('请选择内容ID和至少一个平台');
+    if (!selectedBatchContentId || selectedPlatforms.length === 0) {
+      message.warning('请选择内容和至少一个平台');
       return;
     }
     setBatchLoading(true);
     try {
-      const results = await batchDistribute(batchContentId, selectedPlatforms);
+      const results = await batchDistribute(selectedBatchContentId, selectedPlatforms);
       message.success(`一键分发完成！已为 ${results.length} 个平台创建分发记录`);
       setBatchVisible(false);
-      loadDistributions({ page, page_size: pageSize });
+      setSelectedBatchContentId(null);
+      loadDistributions({ platform: platformFilter !== 'all' ? platformFilter : undefined, status: statusFilter !== 'all' ? statusFilter : undefined, page, page_size: pageSize });
     } catch { message.error('批量分发失败'); }
     finally { setBatchLoading(false); }
-  }, [batchContentId, selectedPlatforms, page, pageSize]);
+  }, [selectedBatchContentId, selectedPlatforms, platformFilter, statusFilter, page, pageSize]);
+
+  const openBatchModal = () => {
+    loadContentList();
+    setBatchVisible(true);
+  };
 
   const showDetail = (record: Distribution) => {
     setSelectedDist(record);
@@ -98,12 +107,13 @@ export default function DistributionCenter() {
       ),
     },
     {
-      title: '内容ID',
-      dataIndex: 'content_id',
-      key: 'content_id',
-      width: 100,
-      render: (v: number) => (
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>#{v}</span>
+      title: '内容标题',
+      dataIndex: 'content_title',
+      key: 'content_title',
+      width: 260,
+      ellipsis: true,
+      render: (v: string) => (
+        <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{v || '—'}</span>
       ),
     },
     {
@@ -140,7 +150,7 @@ export default function DistributionCenter() {
       title: '计划时间',
       dataIndex: 'scheduled_time',
       key: 'scheduled_time',
-      width: 160,
+      width: 150,
       render: (v: string) => (
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)' }}>
           {v ? dayjs(v).format('YYYY-MM-DD HH:mm') : '即时发布'}
@@ -245,8 +255,8 @@ export default function DistributionCenter() {
           />
         </Space>
         <Space>
-          <Button icon={<ReloadOutlined />} onClick={() => loadDistributions({ page, page_size: pageSize })}>刷新</Button>
-          <Button type="primary" icon={<ThunderboltOutlined />} onClick={() => setBatchVisible(true)}>
+          <Button icon={<ReloadOutlined />} onClick={() => loadDistributions({ platform: platformFilter !== 'all' ? platformFilter : undefined, status: statusFilter !== 'all' ? statusFilter : undefined, page, page_size: pageSize })}>刷新</Button>
+          <Button type="primary" icon={<ThunderboltOutlined />} onClick={openBatchModal}>
             一键分发
           </Button>
         </Space>
@@ -266,7 +276,7 @@ export default function DistributionCenter() {
           ),
           onChange: (p, ps) => { setPage(p); setPageSize(ps); },
         }}
-        scroll={{ x: 1200 }}
+        scroll={{ x: 1300 }}
       />
 
       {/* Detail Modal */}
@@ -279,6 +289,7 @@ export default function DistributionCenter() {
       >
         {selectedDist && (
           <Descriptions column={1} bordered size="small">
+            <Descriptions.Item label="内容标题">{selectedDist.content_title || '—'}</Descriptions.Item>
             <Descriptions.Item label="内容ID">{selectedDist.content_id}</Descriptions.Item>
             <Descriptions.Item label="平台">
               <Tag color="blue">{PLATFORM_LABELS[selectedDist.platform] || selectedDist.platform}</Tag>
@@ -343,21 +354,25 @@ export default function DistributionCenter() {
       >
         <div style={{ marginBottom: 20 }}>
           <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 12 }}>
-            选择内容ID和目标平台，AI将自动为每个平台适配内容格式和风格。
+            选择内容和目标平台，AI将自动为每个平台适配内容格式和风格。
           </div>
 
           <div style={{ marginBottom: 16 }}>
-            <span style={{ fontSize: 13, color: 'var(--text-primary)', marginRight: 12 }}>内容ID:</span>
-            <input
-              type="number"
-              min={1}
-              value={batchContentId || ''}
-              onChange={(e) => setBatchContentId(parseInt(e.target.value) || null)}
-              placeholder="输入内容ID"
-              style={{
-                padding: '4px 11px', borderRadius: 6, border: '1px solid var(--border-default)',
-                width: 200, fontSize: 14,
-              }}
+            <span style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 8, display: 'block' }}>选择内容：</span>
+            <Select
+              showSearch
+              placeholder="搜索并选择内容标题..."
+              loading={contentListLoading}
+              value={selectedBatchContentId}
+              onChange={(v) => setSelectedBatchContentId(v)}
+              style={{ width: '100%' }}
+              filterOption={(input, option) =>
+                (option?.label as string || '').toLowerCase().includes(input.toLowerCase())
+              }
+              options={contentList.map((c) => ({
+                value: c.id,
+                label: c.title,
+              }))}
             />
           </div>
 

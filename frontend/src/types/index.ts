@@ -174,7 +174,7 @@ export const SENTIMENT_LABELS: Record<string, string> = {
 
 // ==================== Contents (Phase 2) ====================
 
-export type ContentStatus = 'draft' | 'completed' | 'archived';
+export type ContentStatus = 'draft' | 'pending_review' | 'approved' | 'completed' | 'archived';
 
 export interface Content {
   id: number;
@@ -232,12 +232,16 @@ export interface TitleGenerateResponse {
 
 export const CONTENT_STATUS_LABELS: Record<string, string> = {
   draft: '草稿',
+  pending_review: '待审核',
+  approved: '已审核',
   completed: '已完成',
   archived: '已归档',
 };
 
 export const CONTENT_STATUS_COLORS: Record<string, string> = {
   draft: 'default',
+  pending_review: 'orange',
+  approved: 'cyan',
   completed: 'green',
   archived: 'red',
 };
@@ -253,9 +257,11 @@ export const REWRITE_LABELS: Record<string, string> = {
 export interface Review {
   id: number;
   content_id: number;
+  content_title: string;
   is_approved: boolean;
   issues: string;
   reviewer_notes: string;
+  review_status: string;
   reviewed_at: string;
   created_at: string;
 }
@@ -280,11 +286,12 @@ export interface ReviewUpdate {
 
 // ==================== Distributions (Phase 3) ====================
 
-export type DistributionStatus = 'pending' | 'published' | 'failed' | 'scheduled';
+export type DistributionStatus = 'pending' | 'published' | 'failed' | 'scheduled' | 'cancelled';
 
 export interface Distribution {
   id: number;
   content_id: number;
+  content_title: string;
   platform: string;
   publish_url: string;
   status: DistributionStatus;
@@ -319,6 +326,7 @@ export const DISTRIBUTION_STATUS_LABELS: Record<string, string> = {
   published: '已发布',
   failed: '失败',
   scheduled: '已排期',
+  cancelled: '已取消',
 };
 
 export const DISTRIBUTION_STATUS_COLORS: Record<string, string> = {
@@ -326,6 +334,7 @@ export const DISTRIBUTION_STATUS_COLORS: Record<string, string> = {
   published: 'green',
   failed: 'red',
   scheduled: 'blue',
+  cancelled: 'red',
 };
 
 export const DISTRIBUTION_PLATFORM_LABELS: Record<string, string> = {

@@ -22,6 +22,7 @@ class DistributionUpdate(BaseModel):
 class DistributionResponse(BaseModel):
     id: int
     content_id: int
+    content_title: str = ""
     platform: str
     publish_url: str
     status: str
