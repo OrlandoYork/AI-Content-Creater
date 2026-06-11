@@ -91,9 +91,15 @@ def refresh_hot_topics():
 
                 if evt == "__topics__":
                     # 内部事件：获取生成的话题列表，存入数据库
+                    # 先清空旧热点数据，确保热点不具备持久性（每次刷新替换全部热点）
                     all_topics = data
                     from sqlmodel import Session as DBSession
+                    from app.models.topic import HotTopic
                     with DBSession(sync_engine) as session:
+                        # 删除所有旧热点
+                        session.exec(HotTopic.__table__.delete())  # type: ignore
+                        session.flush()
+                        # 插入新热点
                         for t in all_topics:
                             session.add(t)
                         session.commit()
