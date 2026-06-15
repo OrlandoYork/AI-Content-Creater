@@ -1,4 +1,5 @@
 """LangGraph Checkpointer — PostgreSQL 持久化"""
+import os
 import logging
 import psycopg
 from langgraph.checkpoint.postgres import PostgresSaver
@@ -7,7 +8,10 @@ logger = logging.getLogger(__name__)
 
 _checkpointer: PostgresSaver | None = None
 
-_CHECKPOINTER_CONN_STRING = "host=localhost dbname=contentai user=contentai password=contentai123"
+_CHECKPOINTER_CONN_STRING = os.getenv(
+    "CHECKPOINTER_CONN_STRING",
+    "host=localhost dbname=contentai user=contentai password=contentai123"
+)
 
 
 def get_checkpointer() -> PostgresSaver:

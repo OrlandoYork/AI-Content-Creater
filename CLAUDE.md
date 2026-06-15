@@ -18,6 +18,25 @@ cd frontend && npm run dev
 
 Both servers can also be started via `.claude/launch.json` using `preview_start`.
 
+### Docker One-Click Deployment (Docker Desktop)
+```bash
+cp .env.docker .env        # first time only — edit DEEPSEEK_API_KEY in .env
+docker compose up -d       # starts postgres, redis, backend, frontend
+```
+Access the app at `http://localhost:5173`. Swagger docs at `http://localhost:8083/docs`.
+
+Ports (all customizable via `.env`):
+- Frontend: `5173` → container:80 (Nginx SPA + `/api` reverse proxy)
+- Backend: `8083` → container:8082 (FastAPI)
+- PostgreSQL: `5433` → container:5432
+- Redis: `6380` → container:6379
+
+```bash
+docker compose down          # stop all
+docker compose down -v       # stop + wipe database
+docker compose logs -f backend  # tail backend logs
+```
+
 ### Other Frontend Commands
 ```bash
 cd frontend && npm run build     # TypeScript check + Vite build
@@ -73,10 +92,10 @@ React (Zustand store) → Axios (/api proxy) → FastAPI REST → Service → SQ
 - **`SimulationService`** (`backend/app/services/simulation_service.py`): 单例模拟数据引擎。5 平台×15 条=75 条热点，含 `generate_hot_topics_stream()` 流式生成器（Generator yield SSE 事件）。
 
 ### Database
-- SQLite via SQLModel, stored at `backend/data/app.db` (auto-created on first startup)
-- `Path.mkdir(parents=True, exist_ok=True)` runs before engine creation to ensure the data directory exists
-- `check_same_thread=False` is required for FastAPI's concurrent access
-- Tables are created in `main.py`'s `lifespan` handler; initial hot topic seed data is inserted in the `startup_event` if the `hot_topics` table is empty
+- PostgreSQL 16 (asyncpg) + Redis 7, managed via `docker-compose.yml`
+- Sync engine (psycopg2) for Alembic migrations + LangGraph checkpointer
+- Tables created via alembic + `main.py` lifespan handler; seed data inserted on first startup
+- SQLite support removed in Phase 2 migration
 
 ### Backend Exception Handling
 - `AppException` base class with `code` + `message`; caught by a global exception handler in `main.py`
@@ -132,7 +151,9 @@ React Router v6 nested routes in `App.tsx`, all wrapped by `AppLayout` (240px fi
 | `DEEPSEEK_MODEL` | `deepseek-v4-flash` | 模型名称 |
 | `DEEPSEEK_TIMEOUT` | `180` | 请求超时（秒） |
 | `DEEPSEEK_ENABLED` | `true` | AI 总开关；设为 `false` 强制 Mock |
-| `DATABASE_URL` | `sqlite:///backend/data/app.db` | SQLite 路径 |
+| `DATABASE_URL` | `postgresql+asyncpg://contentai:...` | PostgreSQL 异步连接 |
+| `DATABASE_URL_SYNC` | `postgresql+psycopg2://contentai:...` | PostgreSQL 同步连接 |
+| `REDIS_URL` | `redis://localhost:6379/0` | Redis 连接 |
 | `DEBUG` | `true` | SQL echo 日志 |
 
 ### Schema Migration

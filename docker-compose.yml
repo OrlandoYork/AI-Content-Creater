@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: contentai123
       POSTGRES_DB: contentai
     ports:
-      - "5432:5432"
+      - "${PG_PORT:-5433}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -15,17 +15,56 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
     container_name: contentai-redis
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6380}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 5
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: contentai-backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://contentai:contentai123@postgres:5432/contentai
+      DATABASE_URL_SYNC: postgresql+psycopg2://contentai:contentai123@postgres:5432/contentai
+      REDIS_URL: redis://redis:6379/0
+      DEEPSEEK_API_KEY: "${DEEPSEEK_API_KEY:-}"
+      DEEPSEEK_BASE_URL: "${DEEPSEEK_BASE_URL:-https://api.deepseek.com}"
+      DEEPSEEK_MODEL: "${DEEPSEEK_MODEL:-deepseek-v4-flash}"
+      DEEPSEEK_TIMEOUT: "${DEEPSEEK_TIMEOUT:-180}"
+      DEEPSEEK_ENABLED: "${DEEPSEEK_ENABLED:-true}"
+      DEBUG: "${DEBUG:-false}"
+      CHECKPOINTER_CONN_STRING: "host=postgres dbname=contentai user=contentai password=contentai123"
+    ports:
+      - "${BACKEND_PORT:-8083}:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    entrypoint: ["/app/docker-entrypoint.sh"]
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: contentai-frontend
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
 
 volumes:
   pgdata:

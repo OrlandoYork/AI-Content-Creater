@@ -4,21 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "5548502734bb5dfe",
+        "id": "0cbe036c803ad5c5",
         "type": "tabs",
         "children": [
           {
-            "id": "1b7ced37a3260863",
+            "id": "6fb427ee81b79561",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "AI全媒体内容生产与分发系统.md",
+                "file": "AI全媒体课程设计报告.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "AI全媒体内容生产与分发系统"
+              "title": "AI全媒体课程设计报告"
             }
           }
         ]
@@ -78,7 +78,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "bca4a09dfa6f3c68",
@@ -94,7 +95,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "AI全媒体内容生产与分发系统.md",
+                "file": "docs/superpowers/plans/2026-06-10-agent-architecture-implementation.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +105,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "AI全媒体内容生产与分发系统 的反向链接列表"
+              "title": "2026-06-10-agent-architecture-implementation 的反向链接列表"
             }
           },
           {
@@ -156,20 +157,21 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "AI全媒体内容生产与分发系统.md",
+                "file": "AI全媒体课程设计报告.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "AI全媒体内容生产与分发系统 的大纲"
+              "title": "AI全媒体课程设计报告 的大纲"
             }
           }
-        ]
+        ],
+        "currentTab": 4
       }
     ],
     "direction": "horizontal",
-    "width": 300,
+    "width": 409.5,
     "collapsed": true
   },
   "left-ribbon": {
@@ -183,12 +185,23 @@
       "bases:新建数据库": false
     }
   },
-  "active": "1b7ced37a3260863",
+  "active": "6fb427ee81b79561",
   "lastOpenFiles": [
+    "docs/superpowers/plans/2026-06-10-agent-architecture-implementation.md",
+    "frontend/node_modules/@emotion/unitless/CHANGELOG.md",
+    "npm-image.md",
+    "frontend/node_modules/@ant-design/cssinjs/README.md",
+    "frontend/node_modules/@ant-design/cssinjs/LICENSE.md",
+    "frontend/node_modules/@ant-design/colors/README.md",
+    "frontend/public/icons.svg",
+    "frontend/public/favicon.svg",
+    "frontend/README.md",
+    "AI全媒体课程设计报告.md",
+    "AI全媒体内容生产与分发系统.md",
+    "log.md",
     "backend/app/services/simulation_service.py.tmp.2836.b9393a0f87dd",
     "backend/app/services/simulation_service.py.tmp.2836.ca7dfa9bd664",
     "backend/app/services/simulation_service.py.tmp.2836.965bc4011713",
-    "docs/superpowers/plans/2026-06-10-agent-architecture-implementation.md",
     "frontend/src/pages/analytics/OptimizationPanel.tsx",
     "frontend/src/pages/analytics/ContentReport.tsx",
     "frontend/src/pages/analytics/DataOverview.tsx",
@@ -196,11 +209,7 @@
     "frontend/src/pages/distribution/PublishCalendar.tsx",
     "frontend/src/pages/distribution/DistributionCenter.tsx",
     "frontend/src/pages/distribution",
-    "frontend/src/pages/review/ReviewQueue.tsx",
-    "frontend/README.md",
     "CLAUDE.md",
-    "AI全媒体内容生产与分发系统.md",
-    "CHANGELOG.md",
-    "log.md"
+    "CHANGELOG.md"
   ]
 }

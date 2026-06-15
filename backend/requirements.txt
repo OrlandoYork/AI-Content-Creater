@@ -18,4 +18,5 @@ sqlalchemy[asyncio]==2.0.41
 redis==6.4.0
 alembic==1.15.1
 psycopg2-binary==2.9.10
+psycopg-binary==3.3.4
 sse-starlette==2.2.1

@@ -455,18 +455,7 @@ class SimulationService:
         # 排序
         all_topics.sort(key=lambda x: (0 if x.duplicate_of_id is None else 1, -x.hot_index))
 
-        # ========== Phase: 完成 ==========
-        yield {
-            "event": "complete",
-            "data": {
-                "total": len(all_topics[:count]),
-                "dedup_count": dedup_count,
-                "unique_count": len(all_topics[:count]) - dedup_count,
-                "message": f"✓ 刷新完成：{len(all_topics[:count])} 条热点，去重 {dedup_count} 条",
-            },
-        }
-
-        # 最后 yield 实际对象列表供调用方存储
+        # 最后 yield 实际对象列表供调用方存储（API 层负责 DB 操作 + 发送 complete）
         yield {
             "event": "__topics__",
             "data": all_topics[:count],
