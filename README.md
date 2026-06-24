@@ -240,12 +240,7 @@ npm run dev
 
 ---
 
-## License
-
-MIT License
-
----
 
 <p align="center">
-  <sub>Built with ❤️ by 计科23_1 第15组 — 刘晗逸 · 刘建 · 田翔泽</sub>
+  <sub>Built with ❤️ by 计科23_1 第15组 </sub>
 </p>
